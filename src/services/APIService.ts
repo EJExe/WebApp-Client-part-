@@ -48,7 +48,7 @@ class APIService {
       console.error("Full error response:", data);
       throw new Error(data.title || `HTTP error ${response.status}`);
     }
-  
+    console.log("Ответ от сервера:", response)
     return data;
   }
   
