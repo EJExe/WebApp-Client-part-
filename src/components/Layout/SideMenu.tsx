@@ -1,74 +1,88 @@
-import React from "react"
-import { Drawer, List, ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
-// Импорт компонентов Material UI для создания бокового меню.
-import { Home, Settings, Info, Mail } from "@mui/icons-material"
-// Импорт иконок из Material UI для отображения в меню.
-import { useLocation } from "react-router-dom"
+import { useState } from "react";
+import {
+  Drawer,
+  List,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  IconButton,
+  Box,
+} from "@mui/material";
+import {
+  Home,
+  Map,
+  ViewList,
+  AdminPanelSettings,
+  Close,
+} from "@mui/icons-material";
+import { useLocation } from "react-router-dom";
 
 interface SideMenuProps {
-  onMenuItemClick: (path: string) => void
-  // Пропс отвечает за обработку кликов по элементам меню.
+  open: boolean;
+  onMenuItemClick: (path: string) => void;
+  onClose: () => void;
 }
 
 const MENU_ITEMS = [
-  // Массив с настройками пунктов меню: текст, иконка и путь.
-  { text: "Домашняя", icon: <Home />, path: "/" },
-  { text: "Страница 1", icon: <Mail />, path: "/page1" },
-  { text: "Страница User", icon: <Info />, path: "/page2" },
-  { text: "Страница Admin", icon: <Settings />, path: "/page3" },
-]
+  { text: "Home", icon: <Home />, path: "/" },
+  { text: "Car List", icon: <ViewList />, path: "/page1" },
+  { text: "Map View", icon: <Map />, path: "/page2" },
+  { text: "Admin Panel", icon: <AdminPanelSettings />, path: "/page3" },
+];
 
-const SideMenu: React.FC<SideMenuProps> = ({ onMenuItemClick }) => {
-  const location = useLocation()
-  // Хук для получения текущего пути. Используется для подсветки активного элемента меню.
+const SideMenu: React.FC<SideMenuProps> = ({ open, onMenuItemClick, onClose }) => {
+  const location = useLocation();
 
   return (
     <Drawer
       variant="permanent"
-      // Тип `permanent` означает, что меню всегда отображается (не скрывается).
+      open={open}
       sx={{
-        width: 240,
-        // Устанавливаем фиксированную ширину для бокового меню.
+        width: { xs: open ? 240 : 0, md: 240 },
         flexShrink: 0,
-        // Предотвращаем сужение бокового меню при изменении размера окна.
+        transition: "width 0.3s ease",
         "& .MuiDrawer-paper": {
-          // Настройка внешнего вида панели внутри Drawer.
-          width: 240,
+          width: { xs: open ? 240 : 0, md: 240 },
           boxSizing: "border-box",
-          marginTop: "64px", // Смещение вниз, чтобы меню отображалось под хедером.
-          height: "calc(100vh - 64px)", // Устанавливаем высоту меню на весь экран минус высота хедера.
-          borderRight: "none", // Убираем правую границу меню.
-          backgroundColor: "#8a607f", // Легкий фон для панели меню.
+          marginTop: "64px",
+          height: "calc(100vh - 64px)",
+          borderRight: "1px solid rgba(0,0,0,0.1)",
+          backgroundColor: "#FFFFFF",
+          overflowX: "hidden",
+          transition: "width 0.3s ease",
         },
       }}
     >
+      <Box sx={{ display: { xs: "flex", md: "none" }, justifyContent: "flex-end", p: 1 }}>
+        <IconButton onClick={onClose}>
+          <Close />
+        </IconButton>
+      </Box>
       <List>
-        {/* Перечисляем элементы меню. */}
         {MENU_ITEMS.map((item) => (
           <ListItemButton
             key={item.text}
-            // `key` обязателен для корректного отображения списка React.
-            onClick={() => onMenuItemClick(item.path)}
-            // При клике вызываем функцию с соответствующим путём.
+            onClick={() => {
+              onMenuItemClick(item.path);
+              onClose();
+            }}
             sx={{
-              backgroundColor:
-                location.pathname === item.path ? "rgba(12, 124, 222, 0.5)" : "inherit",
-              // Подсвечиваем активный элемент меню, если текущий путь совпадает с его путём.
+              backgroundColor: location.pathname === item.path ? "rgba(26,60,109,0.1)" : "inherit",
               "&:hover": {
-                backgroundColor: "#e0e0e0",
-                // Меняем цвет фона элемента меню при наведении.
+                backgroundColor: "rgba(26,60,109,0.2)",
+              },
+              "& .MuiListItemIcon-root": {
+                color: location.pathname === item.path ? "#1A3C6D" : "#666666",
               },
             }}
           >
             <ListItemIcon>{item.icon}</ListItemIcon>
-            {/* Отображаем иконку элемента меню. */}
             <ListItemText primary={item.text} />
-            {/* Отображаем текст элемента меню. */}
           </ListItemButton>
         ))}
       </List>
     </Drawer>
-  )
-}
+  );
+};
 
-export default SideMenu
+export default SideMenu;

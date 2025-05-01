@@ -30,7 +30,7 @@ export const CarProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addCar = async (car: Omit<Car, "id">) => {
     try {
-      const newCar = await APIService.createCar(car, false);
+      const newCar = await APIService.createCar(car, true);
       setCars((prevCars) => [...prevCars, newCar]);
     } catch (error) {
       console.error("Failed to add car:", error);
@@ -40,37 +40,43 @@ export const CarProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const updateCar = async (id: number, carData: Partial<Car>): Promise<Car> => {
     try {
-      const response = await fetch(`/api/cars/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          id: id,
-          brand: carData.brand,
-          model: carData.model,
-          pricePerDay: Number(carData.pricePerDay),
-          type: carData.type,
-          imageUrl: carData.imageUrl
-        })
-      });
-  
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.title || `HTTP error ${response.status}`);
-      }
-  
-      return await response.json();
+      const updatedCar = await APIService.updateCar(id, {
+        id: id,
+        brandId: carData.brandId,
+        brandName: carData.brandName,
+        fuelTypeId: carData.fuelTypeId,
+        fuelTypeName: carData.fuelTypeName,
+        driveTypeId: carData.driveTypeId,
+        driveTypeName: carData.driveTypeName,
+        categoryId: carData.categoryId,
+        categoryName: carData.categoryName,
+        bodyTypeId: carData.bodyTypeId,
+        bodyTypeName: carData.bodyTypeName,
+        featureIds: carData.featureIds ?? [],
+        featureNames: carData.featureNames ?? [],
+        model: carData.model,
+        year: carData.year,
+        mileage: carData.mileage,
+        color: carData.color,
+        seats: carData.seats,
+        pricePerDay: carData.pricePerDay ? Number(carData.pricePerDay) : undefined,
+        latitude: carData.latitude,
+        longitude: carData.longitude,
+        imageUrl: carData.imageUrl ?? undefined,
+      }, true); // Set requireAuth: true for admin action
+      setCars((prev) =>
+        prev.map((car) => (car.id === id ? { ...car, ...updatedCar } : car))
+      );
+      return updatedCar;
     } catch (error) {
-      console.error("API Error:", error);
+      console.error("Failed to update car:", error);
       throw error;
     }
   };
 
   const removeCar = async (id: number): Promise<boolean> => {
     try {
-      await APIService.deleteCar(id, false);
+      await APIService.deleteCar(id, true);
       setCars(prev => prev.filter(car => car.id !== id));
       return true;
     } catch (error) {

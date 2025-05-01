@@ -1,118 +1,112 @@
-import React, { useState } from "react"
-import { Modal, Box, Typography, TextField, Button, Stack, CircularProgress } from "@mui/material"
-// Импорт компонентов из Material UI для создания пользовательского интерфейса.
-import { useNavigate } from "react-router-dom"
-import { useAuth } from "../../context/AuthContext"
+import { useState } from "react";
+import {
+  Modal,
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Stack,
+  CircularProgress,
+  Fade,
+} from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const modalStyle = {
-  // Стиль для модального окна (Material UI). Используется для расположения по центру окна и стилизации.
   position: "absolute",
   top: "50%",
   left: "50%",
   transform: "translate(-50%, -50%)",
-  width: 400,
+  width: { xs: "90%", sm: 400 },
   bgcolor: "background.paper",
   boxShadow: 24,
   p: 4,
   borderRadius: 2,
-}
+};
 
 interface LoginModalProps {
-  open: boolean
-  // Пропс `open` отвечает за отображение модального окна.
-  onClose: () => void
-  // Пропс `onClose` — функция, вызываемая при закрытии модального окна.
+  open: boolean;
+  onClose: () => void;
 }
 
 const LoginModal: React.FC<LoginModalProps> = ({ open, onClose }) => {
-  const { login } = useAuth()
-  // Получаем функцию login из контекста авторизации.
-
-  const navigate = useNavigate()
-
-  const [userName, setUserName] = useState("")
-  // Локальное состояние для хранения имени пользователя.
-  const [password, setPassword] = useState("")
-  // Локальное состояние для хранения пароля.
-  const [error, setError] = useState("")
-  // Локальное состояние для хранения сообщений об ошибке.
-  const [isLoading, setIsLoading] = useState(false)
-  // Локальное состояние для управления индикатором загрузки.
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    // Функция обработки отправки формы.
-    e.preventDefault() // Предотвращаем стандартное поведение формы.
-
-    setError("") // Сбрасываем сообщения об ошибках.
-    setIsLoading(true) // Включаем индикатор загрузки.
+    e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     try {
-      await login(userName, password)
-      // Пытаемся выполнить вход с указанными данными.
-
-      onClose() // Закрываем модальное окно после успешного входа.
-      navigate("/") // Перенаправляем пользователя на главную страницу.
+      await login(userName, password);
+      onClose();
+      navigate("/");
     } catch (err) {
-      setError("Вход не выполнен") // Устанавливаем сообщение об ошибке при неудачном входе.
+      setError("Login failed. Please check your credentials.");
     } finally {
-      setIsLoading(false) // Выключаем индикатор загрузки.
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
-    <Modal open={open} onClose={onClose}>
-      {/* Компонент Modal отображает модальное окно, если open === true. */}
-      <Box sx={modalStyle}>
-        {/* Основной контейнер модального окна со стилями. */}
-        <Typography variant="h6" component="h2" mb={3}>
-          Вход в систему
-          {/* Заголовок модального окна. */}
-        </Typography>
-
-        <form onSubmit={handleSubmit}>
-          {/* Форма для ввода данных. Обрабатывается функцией handleSubmit. */}
-          <Stack spacing={2}>
-            {/* Стек элементов с равными отступами между ними. */}
-            <TextField
-              label="Имя пользователя"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              // При изменении текста обновляем состояние userName.
-              required
-              fullWidth
-              // Обязательное поле ввода, занимает всю ширину.
-            />
-
-            <TextField
-              label="Пароль"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              // При изменении текста обновляем состояние password.
-              required
-              fullWidth
-            />
-
-            {error && <Typography color="error">{error}</Typography>}
-            {/* Если есть сообщение об ошибке, отображаем его в красном цвете. */}
-
-            <Button
-              type="submit"
-              variant="contained"
-              disabled={isLoading || userName.length === 0 || !password.length}
-              // Кнопка недоступна, если идет загрузка.
-              endIcon={isLoading ? <CircularProgress size={20} /> : null}
-              // Показываем индикатор загрузки внутри кнопки, если isLoading === true.
-              fullWidth
-            >
-              {isLoading ? "Вход..." : "Войти"}
-              {/* Текст кнопки зависит от состояния загрузки. */}
-            </Button>
-          </Stack>
-        </form>
-      </Box>
+    <Modal open={open} onClose={onClose} closeAfterTransition>
+      <Fade in={open}>
+        <Box sx={modalStyle}>
+          <Typography variant="h6" component="h2" mb={3} fontWeight={600}>
+            Sign In
+          </Typography>
+          <form onSubmit={handleSubmit}>
+            <Stack spacing={2}>
+              <TextField
+                label="Username"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                required
+                fullWidth
+                autoFocus
+                variant="outlined"
+              />
+              <TextField
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                fullWidth
+                variant="outlined"
+              />
+              {error && (
+                <Typography color="error" variant="caption">
+                  {error}
+                </Typography>
+              )}
+              <Button
+                type="submit"
+                variant="contained"
+                disabled={isLoading || !userName || !password}
+                endIcon={isLoading ? <CircularProgress size={20} /> : null}
+                fullWidth
+              >
+                {isLoading ? "Signing In..." : "Sign In"}
+              </Button>
+              <Button
+                variant="text"
+                onClick={() => navigate("/register")}
+                sx={{ mt: 1 }}
+              >
+                Don't have an account? Sign Up
+              </Button>
+            </Stack>
+          </form>
+        </Box>
+      </Fade>
     </Modal>
-  )
-}
+  );
+};
 
-export default LoginModal
+export default LoginModal;
