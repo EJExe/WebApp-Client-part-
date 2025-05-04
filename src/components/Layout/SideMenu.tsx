@@ -16,6 +16,7 @@ import {
   Close,
 } from "@mui/icons-material";
 import { useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 interface SideMenuProps {
   open: boolean;
@@ -23,15 +24,23 @@ interface SideMenuProps {
   onClose: () => void;
 }
 
-const MENU_ITEMS = [
-  { text: "Home", icon: <Home />, path: "/" },
-  { text: "Car List", icon: <ViewList />, path: "/page1" },
-  { text: "Map View", icon: <Map />, path: "/page2" },
-  { text: "Admin Panel", icon: <AdminPanelSettings />, path: "/page3" },
-];
-
 const SideMenu: React.FC<SideMenuProps> = ({ open, onMenuItemClick, onClose }) => {
   const location = useLocation();
+  const { isAdmin } = useAuth();
+
+  const menuItems = [
+    { text: "Главная", icon: <Home />, path: "/" },
+    { text: "Список автомобилей", icon: <ViewList />, path: "/page1" },
+    { text: "Каталог автомобилей", icon: <ViewList />, path: "/cars" },
+    { text: "Карта", icon: <Map />, path: "/page2" },
+    ...(isAdmin
+      ? [
+          { text: "Админ-панель", icon: <AdminPanelSettings />, path: "/page3" },
+          { text: "Управление автомобилями", icon: <AdminPanelSettings />, path: "/admin/cars" },
+          { text: "Добавить автомобиль", icon: <AdminPanelSettings />, path: "/admin/cars/new" },
+        ]
+      : []),
+  ];
 
   return (
     <Drawer
@@ -59,7 +68,7 @@ const SideMenu: React.FC<SideMenuProps> = ({ open, onMenuItemClick, onClose }) =
         </IconButton>
       </Box>
       <List>
-        {MENU_ITEMS.map((item) => (
+        {menuItems.map((item) => (
           <ListItemButton
             key={item.text}
             onClick={() => {

@@ -16,8 +16,11 @@ import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import { useAuth } from "../../context/AuthContext";
 import APIService from "../../services/APIService";
-import { Car } from "../../models/car";
+import { Car } from "../../models/car.models";
 import "leaflet/dist/leaflet.css";
+import { referenceService } from "../../services/ReferenceService";
+import { FuelType } from "../../models/car.models";
+import { BodyType } from "../../models/car.models";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -38,6 +41,8 @@ const Page2 = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [selectedCar, setSelectedCar] = useState<Car | null>(null);
   const [filter, setFilter] = useState({ type: "", fuel: "" });
+  const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
+  const [bodyTypes, setBodyTypes] = useState<BodyType[]>([]);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -53,6 +58,18 @@ const Page2 = () => {
     };
     fetchCars();
   }, [page]);
+
+  useEffect(() => {
+    const loadFilters = async () => {
+      const [fuelData, bodyData] = await Promise.all([
+        referenceService.getFuelTypes(),
+        referenceService.getBodyTypes(),
+      ]);
+      setFuelTypes(fuelData);
+      setBodyTypes(bodyData);
+    };
+    loadFilters();
+  }, []);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -109,9 +126,11 @@ const Page2 = () => {
           sx={{ minWidth: 150 }}
         >
           <MenuItem value="">All</MenuItem>
-          <MenuItem value="Sedan">Sedan</MenuItem>
-          <MenuItem value="SUV">SUV</MenuItem>
-          <MenuItem value="Hatchback">Hatchback</MenuItem>
+          {bodyTypes.map((type) => (
+            <MenuItem key={type.id} value={type.name}> 
+              {type.name}
+            </MenuItem>
+          ))}
         </TextField>
         <TextField
           select
@@ -121,9 +140,11 @@ const Page2 = () => {
           sx={{ minWidth: 150 }}
         >
           <MenuItem value="">All</MenuItem>
-          <MenuItem value="Petrol">Petrol</MenuItem>
-          <MenuItem value="Diesel">Diesel</MenuItem>
-          <MenuItem value="Electric">Electric</MenuItem>
+          {fuelTypes.map((fuel) => (
+            <MenuItem key={fuel.id} value={fuel.name}>
+              {fuel.name}
+            </MenuItem>
+          ))}
         </TextField>
       </Box>
       {userLocation && (
@@ -196,21 +217,20 @@ const Page2 = () => {
               {selectedCar.brandName} {selectedCar.model}
             </DialogTitle>
             <DialogContent>
-              {selectedCar.imageUrl ? (
+              {selectedCar.imagePath ? (
                 <img
-                  src={selectedCar.imageUrl}
-                  alt={`${selectedCar.brandName} ${selectedCar.model}`}
-                  style={{
-                    width: "100%",
-                    maxHeight: "200px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    marginBottom: "16px",
-                  }}
-                  onError={(e) =>
-                    (e.currentTarget.src =
-                      "https://via.placeholder.com/150?text=Car+Image")
-                  }
+                src={`https://localhost:7154${selectedCar.imagePath}`} // Добавлен базовый URL
+                alt={`${selectedCar.brandName} ${selectedCar.model}`}
+                style={{
+                  width: "100%",
+                  maxHeight: "200px",
+                  objectFit: "cover",
+                  borderRadius: "8px",
+                  marginBottom: "16px",
+                }}
+                onError={(e) => 
+                  (e.currentTarget.src = "https://via.placeholder.com/150?text=Car+Image")
+                }
                 />
               ) : (
                 <img

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { CarContext } from "../context/ProjectContext";
-import { Car } from "../models/car";
+import { Car } from "../models/car.models";
 
 const UpdateCar: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +12,7 @@ const UpdateCar: React.FC = () => {
     model: "",
     pricePerDay: 0,
     bodyTypeName: "",
-    imageUrl: "",
+    imagePath: "",
     year: 0,
     color: "",
     seats: 0,
@@ -31,7 +31,7 @@ const UpdateCar: React.FC = () => {
             model: car.model,
             pricePerDay: car.pricePerDay,
             bodyTypeName: car.bodyTypeName,
-            imageUrl: car.imageUrl || "",
+            imagePath: car.imagePath || "",
             year: car.year,
             color: car.color,
             seats: car.seats,
@@ -92,7 +92,7 @@ const UpdateCar: React.FC = () => {
       errors.pricePerDay = ["Price must be positive"];
     }
 
-    if (data.imageUrl && !isValidImageUrl(data.imageUrl)) {
+    if (data.imagePath && !isValidImageUrl(data.imagePath)) {
       errors.imageUrl = ["Please enter a valid image URL"];
     }
 
@@ -228,7 +228,7 @@ const UpdateCar: React.FC = () => {
           <input
             type="url"
             name="imageUrl"
-            value={formData.imageUrl || ""}
+            value={formData.imagePath || ""}
             onChange={handleChange}
             style={{ width: "100%", padding: "8px", marginTop: "5px" }}
           />

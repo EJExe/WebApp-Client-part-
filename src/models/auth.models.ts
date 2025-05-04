@@ -11,6 +11,12 @@ export interface LoginRequest {
     userRole: string
   }
   
+  export interface RegisterRequest {
+    userName: string
+    email: string
+    password: string
+}
+
   // Модель для ошибки API
   export interface ApiError {
     message?: string

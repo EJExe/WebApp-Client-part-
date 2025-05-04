@@ -1,4 +1,4 @@
-import { LoginRequest, LoginResponse, ApiError } from "../models/auth.models"
+import { LoginRequest, RegisterRequest, LoginResponse, ApiError } from "../models/auth.models"
 
 class AuthService {
   private baseUrl: string
@@ -34,6 +34,23 @@ class AuthService {
 
     return (await response.json()) as LoginResponse
     // Если запрос успешен, возвращаем данные пользователя, приведённые к типу `LoginResponse`.
+  }
+
+  async register(credentials: RegisterRequest): Promise<LoginResponse> {
+    const response = await fetch(`${this.baseUrl}/api/Account/register`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(credentials),
+    })
+
+    if (!response.ok) {
+      const errorData: ApiError = await response.json().catch(() => ({}))
+      throw new Error(errorData.message || "Registration failed")
+    }
+
+    return (await response.json()) as LoginResponse
   }
 
   storeToken(token: string): void {

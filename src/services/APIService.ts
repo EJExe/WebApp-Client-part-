@@ -1,4 +1,4 @@
-import { Car } from "../models/car";
+import { Car } from "../models/car.models";
 
 interface PaginatedResponse {
   cars: Car[];
@@ -59,7 +59,7 @@ class APIService {
         pricePerDay: carData.pricePerDay ? Number(carData.pricePerDay) : undefined,
         latitude: carData.latitude,
         longitude: carData.longitude,
-        imageUrl: carData.imageUrl ?? undefined,
+        imageUrl: carData.imagePath ?? undefined,
       }),
     });
 
@@ -154,7 +154,7 @@ class APIService {
         pricePerDay: Number(car.pricePerDay),
         latitude: car.latitude,
         longitude: car.longitude,
-        imageUrl: car.imageUrl ?? "",
+        imageUrl: car.imagePath ?? "",
       }),
     });
 

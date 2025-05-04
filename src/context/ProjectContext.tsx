@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, ReactNode } from "react";
 import APIService from "../services/APIService";
-import { Car } from "../models/car";
+import { Car } from "../models/car.models";
 
 interface ProjectContextProps {
   cars: Car[];
@@ -62,7 +62,7 @@ export const CarProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         pricePerDay: carData.pricePerDay ? Number(carData.pricePerDay) : undefined,
         latitude: carData.latitude,
         longitude: carData.longitude,
-        imageUrl: carData.imageUrl ?? undefined,
+        imagePath: carData.imagePath ?? undefined,
       }, true); // Set requireAuth: true for admin action
       setCars((prev) =>
         prev.map((car) => (car.id === id ? { ...car, ...updatedCar } : car))

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react"
 import { authService } from "../services/AuthService"
-import { LoginResponse } from "../models/auth.models"
+import { LoginResponse, RegisterRequest } from "../models/auth.models"
 
 interface AuthContextType {
   user: LoginResponse | null
@@ -8,6 +8,8 @@ interface AuthContextType {
 
   login: (userName: string, password: string) => Promise<void>
   // Функция для выполнения входа. Возвращает промис.
+
+  register: (userName: string, email: string, password: string) => Promise<void>
 
   logout: () => void
   // Функция для выхода из системы.
@@ -53,6 +55,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }
 
+  const register = async (userName: string, email: string, password: string) => {
+    try {
+      const response = await authService.register({ userName, email, password})
+      authService.storeToken(response.token)
+      localStorage.setItem("user", JSON.stringify(response))
+      setUser(response)
+    } catch (error) {
+      console.error("Ошибка регистрации:", error)
+      throw error
+    }
+  }
+
   const logout = () => {
     // Функция для выхода из системы.
     authService.removeToken()
@@ -68,7 +82,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Проверяем, является ли пользователь администратором (определяется по полю `userRole`).
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isAdmin }}>
+    <AuthContext.Provider value={{ user, login, register, logout, isAdmin }}>
       {/* Передаем данные о пользователе и методы авторизации в контекст. */}
       {children}
     </AuthContext.Provider>

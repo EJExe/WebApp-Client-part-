@@ -75,13 +75,22 @@ const Header = ({ toggleDrawer }: { toggleDrawer: () => void }) => {
             </Menu>
           </>
         ) : (
-          <Button
-            color="inherit"
-            onClick={() => navigate("/login")}
-            sx={{ borderRadius: "8px", border: "1px solid #FFFFFF" }}
-          >
-            Login
-          </Button>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button
+              color="inherit"
+              onClick={() => navigate("/login")}
+              sx={{ borderRadius: "8px", border: "1px solid #FFFFFF" }}
+            >
+              Login
+            </Button>
+            <Button
+              color="inherit"
+              onClick={() => navigate("/register")}
+              sx={{ borderRadius: "8px", border: "1px solid #FFFFFF" }}
+            >
+              Register
+            </Button>
+          </Box>
         )}
       </Toolbar>
     </AppBar>

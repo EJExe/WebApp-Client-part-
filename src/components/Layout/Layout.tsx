@@ -4,6 +4,7 @@ import Header from "./Header";
 import SideMenu from "./SideMenu";
 import { useNavigate } from "react-router-dom";
 
+
 interface LayoutProps {
   children: React.ReactNode;
 }

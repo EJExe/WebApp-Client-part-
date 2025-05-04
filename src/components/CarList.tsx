@@ -1,7 +1,9 @@
 import React, { useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CarContext } from "../context/ProjectContext";
-import { Car } from "../models/car";
+import { Car } from "../models/car.models";
+
+const BASE_API_URL = "https://localhost:7154";
 
 const CarList: React.FC = () => {
   const context = useContext(CarContext);
@@ -62,7 +64,7 @@ const CarList: React.FC = () => {
               <h3 style={{ marginTop: 0 }}>
                 {car.brandName} {car.model}
               </h3>
-              {car.imageUrl ? (
+              {car.imagePath ? (
                 <div
                   style={{
                     height: "200px",
@@ -72,7 +74,7 @@ const CarList: React.FC = () => {
                   }}
                 >
                   <img
-                    src={car.imageUrl}
+                    src={`${BASE_API_URL}${car.imagePath}`}
                     alt={`${car.brandName} ${car.model}`}
                     style={{
                       width: "100%",
@@ -83,8 +85,8 @@ const CarList: React.FC = () => {
                     className="car-image"
                     loading="lazy"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src =
-                        "https://via.placeholder.com/300x200?text=Car+Image";
+                      console.error(`Failed to load image: ${car.imagePath}`);
+                      (e.target as HTMLImageElement).src = "https://placehold.co/300x200?text=Car+Image";
                     }}
                   />
                 </div>
