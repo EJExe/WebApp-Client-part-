@@ -21,7 +21,7 @@ export interface Car {
   latitude: number;
   longitude: number;
   imagePath: string | null;
-  isLeasingDisabled: boolean;
+  isLeasingAvailable: boolean;
 }
 
 export interface CarCreateDto {
@@ -40,7 +40,7 @@ export interface CarCreateDto {
   fuelTypeId: number;
   featureIds: number[];
   image: File | null;
-  isLeasingDisabled: boolean;
+  isLeasingAvailable: boolean;
 }
 
 export interface CarSearchResult {
@@ -57,12 +57,6 @@ export interface CarFilterDto {
   pageNumber?: number;
   pageSize?: number;
 }
-
-// export interface CarFilterDto {
-//   brandId?: number;
-//   minPrice?: number;
-//   maxPrice?: number;
-// }
 
 export interface BodyType {
   id: number;

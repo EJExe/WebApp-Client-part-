@@ -211,9 +211,41 @@ import {
   Select,
   TextField,
   Typography,
+  Paper,
+  Divider,
+  Chip,
+  InputAdornment,
+  IconButton,
+  CircularProgress,
+  styled,
+  Alert
 } from "@mui/material";
+import {
+  AddPhotoAlternate,
+  CheckCircle,
+  Cancel,
+  DirectionsCar,
+  MonetizationOn,
+  Palette,
+  EventSeat,
+  MyLocation,
+  Save,
+  Edit
+} from "@mui/icons-material";
 import { CarCreateDto, BodyType, Brand, CarCategory, CarDriveType, CarFeature, FuelType } from "../models/car.models";
 import { useAuth } from "../context/AuthContext";
+
+const GradientButton = styled(Button)({
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  border: 0,
+  borderRadius: 8,
+  color: 'white',
+  padding: '8px 24px',
+  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .2)',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)',
+  },
+});
 
 const CarForm: React.FC = () => {
   const navigate = useNavigate();
@@ -234,7 +266,7 @@ const CarForm: React.FC = () => {
     fuelTypeId: 0,
     featureIds: [],
     image: null,
-    isLeasingDisabled: false,
+    isLeasingAvailable: false,
   });
   const [error, setError] = useState<string>("");
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -243,6 +275,7 @@ const CarForm: React.FC = () => {
   const [driveTypes, setDriveTypes] = useState<CarDriveType[]>([]);
   const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
   const [features, setFeatures] = useState<CarFeature[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (user?.userRole !== "admin") {
@@ -293,244 +326,363 @@ const CarForm: React.FC = () => {
 
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Add New Car
-      </Typography>
-      {error && (
-        <Typography color="error" gutterBottom>
-          {error}
-        </Typography>
-      )}
-      <form onSubmit={handleSubmit}>
-        <Grid container spacing={3}>
-          <Grid xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Brand</InputLabel>
-              <Select
-                value={newCar.brandId}
+      <Paper elevation={0} sx={{ p: 4, borderRadius: 4, bgcolor: 'white' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+          <DirectionsCar sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4">Добавление нового автомобиля</Typography>
+        </Box>
+
+        {error && (
+          <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>
+        )}
+
+        <form onSubmit={handleSubmit}>
+          <Grid container spacing={3}>
+            {/* Марка и модель */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Марка</InputLabel>
+                <Select
+                  value={newCar.brandId}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, brandId: Number(e.target.value) })
+                  }
+                  required
+                >
+                  {brands.map((brand) => (
+                    <MenuItem key={brand.id} value={brand.id}>
+                      {brand.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Модель"
+                value={newCar.model}
+                onChange={(e) => setNewCar({ ...newCar, model: e.target.value })}
+                required
+                InputProps={{
+                  endAdornment: <Edit color="action" />,
+                }}
+              />
+            </Grid>
+
+            {/* Основные характеристики */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle2" color="textSecondary" gutterBottom>
+                Основные характеристики
+              </Typography>
+              <Grid container spacing={2}>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Год выпуска"
+                    type="number"
+                    value={newCar.year}
+                    onChange={(e) =>
+                      setNewCar({ ...newCar, year: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Пробег"
+                    type="number"
+                    value={newCar.mileage}
+                    InputProps={{
+                      endAdornment: <InputAdornment position="end">км</InputAdornment>,
+                    }}
+                    onChange={(e) =>
+                      setNewCar({ ...newCar, mileage: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Места"
+                    type="number"
+                    value={newCar.seats}
+                    InputProps={{
+                      endAdornment: <EventSeat fontSize="small" color="action" />,
+                    }}
+                    onChange={(e) =>
+                      setNewCar({ ...newCar, seats: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Grid>
+                <Grid item xs={6} sm={3}>
+                  <TextField
+                    fullWidth
+                    label="Цвет"
+                    value={newCar.color}
+                    InputProps={{
+                      endAdornment: <Palette fontSize="small" color="action" />,
+                    }}
+                    onChange={(e) => setNewCar({ ...newCar, color: e.target.value })}
+                    required
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+
+            {/* Цена и местоположение */}
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                label="Цена за день"
+                type="number"
+                value={newCar.pricePerDay}
+                InputProps={{
+                  startAdornment: <InputAdornment position="start">₽</InputAdornment>,
+                  endAdornment: <MonetizationOn color="action" />,
+                }}
                 onChange={(e) =>
-                  setNewCar({ ...newCar, brandId: Number(e.target.value) })
+                  setNewCar({ ...newCar, pricePerDay: Number(e.target.value) })
                 }
                 required
+              />
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <Grid container spacing={2}>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Широта"
+                    type="number"
+                    value={newCar.latitude}
+                    InputProps={{
+                      endAdornment: <MyLocation fontSize="small" color="action" />,
+                    }}
+                    onChange={(e) =>
+                      setNewCar({ ...newCar, latitude: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Grid>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    label="Долгота"
+                    type="number"
+                    value={newCar.longitude}
+                    InputProps={{
+                      endAdornment: <MyLocation fontSize="small" color="action" />,
+                    }}
+                    onChange={(e) =>
+                      setNewCar({ ...newCar, longitude: Number(e.target.value) })
+                    }
+                    required
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+
+            {/* Статус аренды */}
+            <Grid item xs={12}>
+              <FormControl fullWidth>
+                <Box sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 1.5,
+                  borderRadius: 3,
+                  bgcolor: newCar.isLeasingAvailable ? 'success.light' : 'error.light',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <Typography variant="body1" sx={{ flexGrow: 1 }}>
+                    Статус аренды:
+                    <Box component="span" sx={{ ml: 1, fontWeight: 600 }}>
+                      {newCar.isLeasingAvailable ? 'Доступен' : 'Недоступен'}
+                    </Box>
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    disableElevation
+                    sx={{
+                      borderRadius: 2,
+                      minWidth: 120,
+                      bgcolor: newCar.isLeasingAvailable ? 'success.main' : 'error.main',
+                      '&:hover': {
+                        bgcolor: newCar.isLeasingAvailable ? 'success.dark' : 'error.dark'
+                      }
+                    }}
+                    onClick={() => setNewCar({...newCar, isLeasingAvailable: !newCar.isLeasingAvailable})}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      {newCar.isLeasingAvailable ? (
+                        <>
+                          <CheckCircle fontSize="small" />
+                          Включено
+                        </>
+                      ) : (
+                        <>
+                          <Cancel fontSize="small" />
+                          Выключено
+                        </>
+                      )}
+                    </Box>
+                  </Button>
+                </Box>
+              </FormControl>
+            </Grid>
+
+            {/* Дополнительные параметры */}
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Тип кузова</InputLabel>
+                <Select
+                  value={newCar.bodyTypeId}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, bodyTypeId: Number(e.target.value) })
+                  }
+                  required
+                >
+                  {bodyTypes.map((bodyType) => (
+                    <MenuItem key={bodyType.id} value={bodyType.id}>
+                      {bodyType.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Категория</InputLabel>
+                <Select
+                  value={newCar.categoryId}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, categoryId: Number(e.target.value) })
+                  }
+                  required
+                >
+                  {categories.map((category) => (
+                    <MenuItem key={category.id} value={category.id}>
+                      {category.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Тип привода</InputLabel>
+                <Select
+                  value={newCar.driveTypeId}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, driveTypeId: Number(e.target.value) })
+                  }
+                  required
+                >
+                  {driveTypes.map((driveType) => (
+                    <MenuItem key={driveType.id} value={driveType.id}>
+                      {driveType.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} md={6}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Тип топлива</InputLabel>
+                <Select
+                  value={newCar.fuelTypeId}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, fuelTypeId: Number(e.target.value) })
+                  }
+                  required
+                >
+                  {fuelTypes.map((fuelType) => (
+                    <MenuItem key={fuelType.id} value={fuelType.id}>
+                      {fuelType.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Особенности */}
+            <Grid item xs={12}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Особенности</InputLabel>
+                <Select
+                  multiple
+                  value={newCar.featureIds}
+                  onChange={(e) =>
+                    setNewCar({ ...newCar, featureIds: e.target.value as number[] })
+                  }
+                  renderValue={(selected) => (
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                      {selected.map((value) => (
+                        <Chip
+                          key={value}
+                          label={features.find(f => f.id === value)?.name}
+                          size="small"
+                        />
+                      ))}
+                    </Box>
+                  )}
+                >
+                  {features.map((feature) => (
+                    <MenuItem key={feature.id} value={feature.id}>
+                      {feature.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {/* Загрузка изображения */}
+            <Grid item xs={12}>
+              <Button
+                component="label"
+                variant="outlined"
+                fullWidth
+                startIcon={<AddPhotoAlternate />}
+                sx={{ py: 1.5, borderRadius: 2 }}
               >
-                <MenuItem value={0}>Select Brand</MenuItem>
-                {brands.map((brand) => (
-                  <MenuItem key={brand.id} value={brand.id}>
-                    {brand.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                Загрузить изображение
+                <input
+                  type="file"
+                  hidden
+                  accept="image/*"
+                  onChange={(e) =>
+                    setNewCar({
+                      ...newCar,
+                      image: e.target.files ? e.target.files[0] : null,
+                    })
+                  }
+                />
+              </Button>
+            </Grid>
+
+            {/* Кнопка отправки */}
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <GradientButton
+                  type="submit"
+                  disabled={isLoading}
+                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                >
+                  {isLoading ? 'Сохранение...' : 'Сохранить автомобиль'}
+                </GradientButton>
+              </Box>
+            </Grid>
           </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Model"
-              value={newCar.model}
-              onChange={(e) => setNewCar({ ...newCar, model: e.target.value })}
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Year"
-              type="number"
-              value={newCar.year}
-              onChange={(e) =>
-                setNewCar({ ...newCar, year: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Mileage (km)"
-              type="number"
-              value={newCar.mileage}
-              onChange={(e) =>
-                setNewCar({ ...newCar, mileage: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Color"
-              value={newCar.color}
-              onChange={(e) => setNewCar({ ...newCar, color: e.target.value })}
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Seats"
-              type="number"
-              value={newCar.seats}
-              onChange={(e) =>
-                setNewCar({ ...newCar, seats: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Price per Day ($)"
-              type="number"
-              value={newCar.pricePerDay}
-              onChange={(e) =>
-                setNewCar({ ...newCar, pricePerDay: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Latitude"
-              type="number"
-              value={newCar.latitude}
-              onChange={(e) =>
-                setNewCar({ ...newCar, latitude: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <TextField
-              fullWidth
-              label="Longitude"
-              type="number"
-              value={newCar.longitude}
-              onChange={(e) =>
-                setNewCar({ ...newCar, longitude: Number(e.target.value) })
-              }
-              required
-            />
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Body Type</InputLabel>
-              <Select
-                value={newCar.bodyTypeId}
-                onChange={(e) =>
-                  setNewCar({ ...newCar, bodyTypeId: Number(e.target.value) })
-                }
-                required
-              >
-                <MenuItem value={0}>Select Body Type</MenuItem>
-                {bodyTypes.map((bodyType) => (
-                  <MenuItem key={bodyType.id} value={bodyType.id}>
-                    {bodyType.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={newCar.categoryId}
-                onChange={(e) =>
-                  setNewCar({ ...newCar, categoryId: Number(e.target.value) })
-                }
-                required
-              >
-                <MenuItem value={0}>Select Category</MenuItem>
-                {categories.map((category) => (
-                  <MenuItem key={category.id} value={category.id}>
-                    {category.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Drive Type</InputLabel>
-              <Select
-                value={newCar.driveTypeId}
-                onChange={(e) =>
-                  setNewCar({ ...newCar, driveTypeId: Number(e.target.value) })
-                }
-                required
-              >
-                <MenuItem value={0}>Select Drive Type</MenuItem>
-                {driveTypes.map((driveType) => (
-                  <MenuItem key={driveType.id} value={driveType.id}>
-                    {driveType.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Fuel Type</InputLabel>
-              <Select
-                value={newCar.fuelTypeId}
-                onChange={(e) =>
-                  setNewCar({ ...newCar, fuelTypeId: Number(e.target.value) })
-                }
-                required
-              >
-                <MenuItem value={0}>Select Fuel Type</MenuItem>
-                {fuelTypes.map((fuelType) => (
-                  <MenuItem key={fuelType.id} value={fuelType.id}>
-                    {fuelType.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Features</InputLabel>
-              <Select
-                multiple
-                value={newCar.featureIds}
-                onChange={(e) =>
-                  setNewCar({
-                    ...newCar,
-                    featureIds: e.target.value as number[],
-                  })
-                }
-              >
-                {features.map((feature) => (
-                  <MenuItem key={feature.id} value={feature.id}>
-                    {feature.name}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid xs={12}>
-            <Typography variant="subtitle1" gutterBottom>
-              Upload Image
-            </Typography>
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(e) =>
-                setNewCar({
-                  ...newCar,
-                  image: e.target.files ? e.target.files[0] : null,
-                })
-              }
-            />
-          </Grid>
-          <Grid xs={12}>
-            <Button type="submit" variant="contained" color="primary" size="large">
-              Create Car
-            </Button>
-          </Grid>
-        </Grid>
-      </form>
+        </form>
+      </Paper>
     </Box>
   );
 };

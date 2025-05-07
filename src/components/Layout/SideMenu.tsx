@@ -1,22 +1,25 @@
-import { useState } from "react";
+// SideMenu.tsx
+// SideMenu.tsx
+import { useState } from 'react';
+import { useAuth } from "../../context/AuthContext";
 import {
   Drawer,
   List,
   ListItemButton,
   ListItemIcon,
-  ListItemText,
-  IconButton,
-  Box,
+  ListItemText
 } from "@mui/material";
 import {
-  Home,
-  Map,
-  ViewList,
-  AdminPanelSettings,
-  Close,
+  DirectionsCar as DirectionsCarIcon,
+  Map as MapIcon,
+  Home as HomeIcon,
+  AdminPanelSettings as AdminIcon,
+  Build as BuildIcon,
+  People as PeopleIcon,
+  Settings as SettingsIcon,
+  Construction as ConstructionIcon
 } from "@mui/icons-material";
-import { useLocation } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+
 
 interface SideMenuProps {
   open: boolean;
@@ -24,71 +27,99 @@ interface SideMenuProps {
   onClose: () => void;
 }
 
-const SideMenu: React.FC<SideMenuProps> = ({ open, onMenuItemClick, onClose }) => {
-  const location = useLocation();
+// SideMenu.tsx
+const SideMenu = ({ open, onMenuItemClick, onClose }: SideMenuProps) => {
+  const [isExpanded, setIsExpanded] = useState(false);
   const { isAdmin } = useAuth();
-
-  const menuItems = [
-    { text: "Главная", icon: <Home />, path: "/" },
-    { text: "Список автомобилей", icon: <ViewList />, path: "/page1" },
-    { text: "Каталог автомобилей", icon: <ViewList />, path: "/cars" },
-    { text: "Карта", icon: <Map />, path: "/page2" },
-    ...(isAdmin
-      ? [
-          { text: "Админ-панель", icon: <AdminPanelSettings />, path: "/page3" },
-          { text: "Управление автомобилями", icon: <AdminPanelSettings />, path: "/admin/cars" },
-          { text: "Добавить автомобиль", icon: <AdminPanelSettings />, path: "/admin/cars/new" },
-        ]
-      : []),
-  ];
 
   return (
     <Drawer
-      variant="permanent"
+      variant="persistent"
+      anchor="left"
       open={open}
+      onClose={onClose}
       sx={{
-        width: { xs: open ? 240 : 0, md: 240 },
-        flexShrink: 0,
-        transition: "width 0.3s ease",
-        "& .MuiDrawer-paper": {
-          width: { xs: open ? 240 : 0, md: 240 },
-          boxSizing: "border-box",
-          marginTop: "64px",
-          height: "calc(100vh - 64px)",
-          borderRight: "1px solid rgba(0,0,0,0.1)",
-          backgroundColor: "#FFFFFF",
-          overflowX: "hidden",
-          transition: "width 0.3s ease",
+        width: open ? 240 : 56,
+        '& .MuiDrawer-paper': {
+          width: open ? 240 : 56,
+          bgcolor: '#1A3C6D',
+          marginTop: '64px'
         },
       }}
     >
-      <Box sx={{ display: { xs: "flex", md: "none" }, justifyContent: "flex-end", p: 1 }}>
-        <IconButton onClick={onClose}>
-          <Close />
-        </IconButton>
-      </Box>
       <List>
-        {menuItems.map((item) => (
-          <ListItemButton
-            key={item.text}
-            onClick={() => {
-              onMenuItemClick(item.path);
-              onClose();
-            }}
-            sx={{
-              backgroundColor: location.pathname === item.path ? "rgba(26,60,109,0.1)" : "inherit",
-              "&:hover": {
-                backgroundColor: "rgba(26,60,109,0.2)",
-              },
-              "& .MuiListItemIcon-root": {
-                color: location.pathname === item.path ? "#1A3C6D" : "#666666",
-              },
-            }}
-          >
-            <ListItemIcon>{item.icon}</ListItemIcon>
-            <ListItemText primary={item.text} />
-          </ListItemButton>
-        ))}
+        {/* Главная */}
+        <ListItemButton 
+          onClick={() => onMenuItemClick('/')}
+          sx={{ minHeight: 48 }}
+        >
+          <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+            <HomeIcon sx={{ color: 'inherit' }} />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Главная" 
+            sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+          />
+        </ListItemButton>
+
+        {/* Каталог автомобилей */}
+        <ListItemButton 
+          onClick={() => onMenuItemClick('/cars')}
+          sx={{ minHeight: 48 }}
+        >
+          <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+            <DirectionsCarIcon sx={{ color: 'inherit' }} />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Автомобили" 
+            sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+          />
+        </ListItemButton>
+
+        {/* Карта */}
+        <ListItemButton 
+          onClick={() => onMenuItemClick('/page2')}
+          sx={{ minHeight: 48 }}
+        >
+          <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+            <MapIcon sx={{ color: 'inherit' }} />
+          </ListItemIcon>
+          <ListItemText 
+            primary="Карта" 
+            sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+          />
+        </ListItemButton>
+
+        {/* Администраторские разделы */}
+        {isAdmin && (
+          <>
+            <ListItemButton 
+              onClick={() => onMenuItemClick('/admin/cars')}
+              sx={{ minHeight: 48 }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+                <ConstructionIcon sx={{ color: 'inherit' }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Управление авто" 
+                sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+              />
+            </ListItemButton>
+
+            <ListItemButton 
+              onClick={() => onMenuItemClick('/admin/cars/new')}
+              sx={{ minHeight: 48 }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+                <ConstructionIcon sx={{ color: 'inherit' }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Добавить Автомобиль" 
+                sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+              />
+            </ListItemButton>
+          </>
+        )}
       </List>
     </Drawer>
   );

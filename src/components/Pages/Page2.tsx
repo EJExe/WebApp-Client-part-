@@ -11,16 +11,35 @@ import {
   TextField,
   MenuItem,
   Fade,
+  Alert,
+  CircularProgress,
+  Chip,
+  styled,
+  InputAdornment,
+  Grid
 } from "@mui/material";
 import { MapContainer, TileLayer, Marker } from "react-leaflet";
 import L from "leaflet";
 import { useAuth } from "../../context/AuthContext";
 import APIService from "../../services/APIService";
-import { Car } from "../../models/car.models";
+import { Car, FuelType, BodyType } from "../../models/car.models";
 import "leaflet/dist/leaflet.css";
 import { referenceService } from "../../services/ReferenceService";
-import { FuelType } from "../../models/car.models";
-import { BodyType } from "../../models/car.models";
+import {
+  DirectionsCar,
+  LocalGasStation,
+  CarRental,
+  ArrowBack,
+  ArrowForward,
+  Close,
+  ZoomIn,
+  Image,
+  FilterAlt,
+  CheckCircle,
+  MonetizationOn, 
+  Palette, 
+  EventSeat
+} from "@mui/icons-material";
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -29,7 +48,19 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
 
-const Page2 = () => {
+const GradientButton = styled(Button)({
+  background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
+  border: 0,
+  borderRadius: 8,
+  color: 'white',
+  padding: '8px 24px',
+  boxShadow: '0 3px 5px 2px rgba(33, 203, 243, .2)',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #1976D2 30%, #1E88E5 90%)',
+  },
+});
+
+const CarMapPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const mapRef = useRef<any>(null);
@@ -43,6 +74,7 @@ const Page2 = () => {
   const [filter, setFilter] = useState({ type: "", fuel: "" });
   const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
   const [bodyTypes, setBodyTypes] = useState<BodyType[]>([]);
+  const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
 
   useEffect(() => {
     const fetchCars = async () => {
@@ -52,7 +84,7 @@ const Page2 = () => {
         setTotalCount(data.totalCount);
         setLoading(false);
       } catch (err) {
-        setError("Failed to load cars. Please try again later.");
+        setError("Ошибка загрузки автомобилей. Пожалуйста, попробуйте позже.");
         setLoading(false);
       }
     };
@@ -78,20 +110,14 @@ const Page2 = () => {
           setUserLocation([position.coords.latitude, position.coords.longitude]);
         },
         (err) => {
-          console.warn("Could not get user location:", err.message);
-          setUserLocation([51.505, -0.09]);
+          console.warn("Не удалось получить местоположение:", err.message);
+          setUserLocation([55.7558, 37.6173]);
         }
       );
     } else {
-      setUserLocation([51.505, -0.09]);
+      setUserLocation([55.7558, 37.6173]);
     }
   }, []);
-
-  useEffect(() => {
-    if (selectedCar && mapRef.current) {
-      mapRef.current.setView([selectedCar.latitude, selectedCar.longitude], 15);
-    }
-  }, [selectedCar]);
 
   const handleMarkerClick = (car: Car) => {
     setSelectedCar(car);
@@ -101,200 +127,240 @@ const Page2 = () => {
     setSelectedCar(null);
   };
 
+  const handleImageClick = () => {
+    setIsImageDialogOpen(true);
+  };
+
+  const handleCloseImageDialog = () => {
+    setIsImageDialogOpen(false);
+  };
+
   if (loading) {
-    return <Typography>Loading cars...</Typography>;
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress size={60} thickness={4} />
+      </Box>
+    );
   }
 
   if (error) {
-    return <Typography color="error">{error}</Typography>;
+    return (
+      <Alert severity="error" sx={{ m: 4 }}>
+        {error}
+      </Alert>
+    );
   }
 
   return (
-    <Box sx={{ py: 4 }}>
-      <Typography variant="h2" gutterBottom fontWeight={700}>
-        Find a Car Near You
-      </Typography>
-      <Typography variant="body1" color="text.secondary" gutterBottom>
-        {user ? `${user.userName} (${user.userRole})` : "Guest"} - Select a car from the map below. Total cars: {totalCount}
-      </Typography>
-      <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap" }}>
-        <TextField
-          select
-          label="Body Type"
-          value={filter.type}
-          onChange={(e) => setFilter({ ...filter, type: e.target.value })}
-          sx={{ minWidth: 150 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          {bodyTypes.map((type) => (
-            <MenuItem key={type.id} value={type.name}> 
-              {type.name}
-            </MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Fuel Type"
-          value={filter.fuel}
-          onChange={(e) => setFilter({ ...filter, fuel: e.target.value })}
-          sx={{ minWidth: 150 }}
-        >
-          <MenuItem value="">All</MenuItem>
-          {fuelTypes.map((fuel) => (
-            <MenuItem key={fuel.id} value={fuel.name}>
-              {fuel.name}
-            </MenuItem>
-          ))}
-        </TextField>
-      </Box>
-      {userLocation && (
-        <Box
-          sx={{
-            filter: selectedCar ? "blur(3px)" : "none",
-            transition: "filter 0.3s ease",
-            borderRadius: "12px",
-            overflow: "hidden",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          }}
-        >
-          <MapContainer
-            ref={mapRef}
-            center={userLocation}
-            zoom={13}
-            style={{ height: "500px", width: "100%" }}
-          >
-            <TileLayer
-              attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {cars
-              .filter((car) =>
-                filter.type ? car.bodyTypeName === filter.type : true
-              )
-              .filter((car) =>
-                filter.fuel ? car.fuelTypeName === filter.fuel : true
-              )
-              .map((car) => (
-                <Marker
-                  key={car.id}
-                  position={[car.latitude, car.longitude]}
-                  eventHandlers={{ click: () => handleMarkerClick(car) }}
-                />
-              ))}
-          </MapContainer>
+    <Box sx={{ py: 4, px: 2 }}>
+      <Box sx={{ maxWidth: 1200, mx: 'auto' }}>
+        <Box sx={{ mb: 4, textAlign: 'center' }}>
+          <DirectionsCar sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
+          <Typography variant="h3" gutterBottom fontWeight={700}>
+            Найди автомобиль рядом
+          </Typography>
+          <Typography variant="h6" color="text.secondary">
+            {user ? `${user.userName} (${user.userRole})` : "Гость"} · Всего автомобилей: {totalCount}
+          </Typography>
         </Box>
-      )}
-      <Box sx={{ mt: 3, display: "flex", justifyContent: "center", gap: 2 }}>
-        <Button
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          disabled={page === 1}
-          variant="outlined"
-        >
-          Previous
-        </Button>
-        <Typography>
-          Page {page} of {Math.ceil(totalCount / 10)}
-        </Typography>
-        <Button
-          onClick={() => setPage((prev) => prev + 1)}
-          disabled={page >= Math.ceil(totalCount / 10)}
-          variant="outlined"
-        >
-          Next
-        </Button>
-      </Box>
-      <Dialog
-        open={!!selectedCar}
-        onClose={handleCloseDialog}
-        maxWidth="sm"
-        fullWidth
-        TransitionComponent={Fade}
-        TransitionProps={{ timeout: 300 }}
-      >
-        {selectedCar && (
-          <>
-            <DialogTitle sx={{ fontWeight: 700 }}>
-              {selectedCar.brandName} {selectedCar.model}
-            </DialogTitle>
-            <DialogContent>
-              {selectedCar.imagePath ? (
-                <img
-                src={`https://localhost:7154${selectedCar.imagePath}`} // Добавлен базовый URL
-                alt={`${selectedCar.brandName} ${selectedCar.model}`}
-                style={{
-                  width: "100%",
-                  maxHeight: "200px",
-                  objectFit: "cover",
-                  borderRadius: "8px",
-                  marginBottom: "16px",
-                }}
-                onError={(e) => 
-                  (e.currentTarget.src = "https://via.placeholder.com/150?text=Car+Image")
-                }
-                />
-              ) : (
-                <img
-                  src="https://via.placeholder.com/150?text=Car+Image"
-                  alt="No Image"
-                  style={{
-                    width: "100%",
-                    maxHeight: "200px",
-                    objectFit: "cover",
-                    borderRadius: "8px",
-                    marginBottom: "16px",
-                  }}
-                />
-              )}
-              <Typography variant="body1" gutterBottom>
-                <strong>Price per day:</strong> ${selectedCar.pricePerDay}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Type:</strong> {selectedCar.bodyTypeName}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Fuel:</strong> {selectedCar.fuelTypeName}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Drive:</strong> {selectedCar.driveTypeName}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Category:</strong> {selectedCar.categoryName}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Year:</strong> {selectedCar.year}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Mileage:</strong> {selectedCar.mileage} km
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Color:</strong> {selectedCar.color}
-              </Typography>
-              <Typography variant="body1" gutterBottom>
-                <strong>Seats:</strong> {selectedCar.seats}
-              </Typography>
-              {selectedCar.featureNames.length > 0 && (
-                <Typography variant="body1" gutterBottom>
-                  <strong>Features:</strong> {selectedCar.featureNames.join(", ")}
-                </Typography>
-              )}
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={handleCloseDialog} color="primary" variant="outlined">
-                Close
-              </Button>
-              <Button
-                onClick={() => navigate(`/cars/${selectedCar.id}`)}
-                color="secondary"
-                variant="contained"
-              >
-                Rent Now
-              </Button>
-            </DialogActions>
-          </>
+
+        <Box sx={{ mb: 3, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: 'center' }}>
+          <TextField
+            select
+            label="Тип кузова"
+            value={filter.type}
+            onChange={(e) => setFilter({ ...filter, type: e.target.value })}
+            sx={{ minWidth: 200 }}
+            InputProps={{
+              startAdornment: <FilterAlt color="action" sx={{ mr: 1 }} />,
+            }}
+          >
+            <MenuItem value="">Все</MenuItem>
+            {bodyTypes.map((type) => (
+              <MenuItem key={type.id} value={type.name}>
+                {type.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label="Тип топлива"
+            value={filter.fuel}
+            onChange={(e) => setFilter({ ...filter, fuel: e.target.value })}
+            sx={{ minWidth: 200 }}
+            InputProps={{
+              startAdornment: <LocalGasStation color="action" sx={{ mr: 1 }} />,
+            }}
+          >
+            <MenuItem value="">Все</MenuItem>
+            {fuelTypes.map((fuel) => (
+              <MenuItem key={fuel.id} value={fuel.name}>
+                {fuel.name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
+
+        {userLocation && (
+          <Box
+            sx={{
+              borderRadius: "16px",
+              overflow: "hidden",
+              boxShadow: 6,
+              position: 'relative',
+              '&:hover': {
+                boxShadow: 8,
+              },
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <MapContainer
+              ref={mapRef}
+              center={userLocation}
+              zoom={13}
+              style={{ height: "600px", width: "100%" }}
+            >
+              <TileLayer
+                attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {cars
+                .filter((car) => filter.type ? car.bodyTypeName === filter.type : true)
+                .filter((car) => filter.fuel ? car.fuelTypeName === filter.fuel : true)
+                .map((car) => (
+                  <Marker
+                    key={car.id}
+                    position={[car.latitude, car.longitude]}
+                    eventHandlers={{ click: () => handleMarkerClick(car) }}
+                  />
+                ))}
+            </MapContainer>
+          </Box>
         )}
-      </Dialog>
+
+        
+
+        <Dialog
+          open={!!selectedCar}
+          onClose={handleCloseDialog}
+          maxWidth="sm"
+          fullWidth
+          TransitionComponent={Fade}
+          sx={{ backdropFilter: 'blur(3px)' }}
+        >
+          {selectedCar && (
+            <Box sx={{ p: 3 }}>
+              <DialogTitle sx={{ fontWeight: 700, fontSize: 24 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                  <DirectionsCar fontSize="large" />
+                  {selectedCar.brandName} {selectedCar.model}
+                </Box>
+              </DialogTitle>
+              
+              <DialogContent>
+                {selectedCar.imagePath && (
+                  <Box sx={{ position: 'relative', mb: 3 }}>
+                    <img
+                      src={`https://localhost:7154${selectedCar.imagePath}`}
+                      alt={selectedCar.model}
+                      style={{
+                        width: '100%',
+                        height: 200,
+                        objectFit: 'cover',
+                        borderRadius: 12,
+                        cursor: 'pointer',
+                      }}
+                      onClick={handleImageClick}
+                    />
+                    <ZoomIn sx={{
+                      position: 'absolute',
+                      top: 10,
+                      right: 10,
+                      color: 'white',
+                      bgcolor: 'rgba(0,0,0,0.5)',
+                      borderRadius: 1,
+                      p: 0.5,
+                      fontSize: 30
+                    }} />
+                  </Box>
+                )}
+
+                <Grid container spacing={2}>
+                  {[
+                    { label: 'Цена в день', value: `${selectedCar.pricePerDay} ₽`, icon: <MonetizationOn /> },
+                    { label: 'Тип кузова', value: selectedCar.bodyTypeName, icon: <DirectionsCar /> },
+                    { label: 'Топливо', value: selectedCar.fuelTypeName, icon: <LocalGasStation /> },
+                    { label: 'Год выпуска', value: selectedCar.year, icon: <Image /> },
+                    { label: 'Пробег', value: `${selectedCar.mileage} км`, icon: <CheckCircle /> },
+                    { label: 'Цвет', value: selectedCar.color, icon: <Palette /> },
+                    { label: 'Места', value: selectedCar.seats, icon: <EventSeat /> },
+                  ].map((item) => (
+                    <Grid item xs={6} key={item.label}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        {item.icon}
+                        <Typography variant="body1" fontWeight={500}>
+                          {item.label}:
+                        </Typography>
+                      </Box>
+                      <Chip label={item.value} variant="outlined" sx={{ width: '100%' }} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </DialogContent>
+
+              <DialogActions sx={{ justifyContent: 'space-between', p: 3 }}>
+                <Button onClick={handleCloseDialog} startIcon={<Close />}>
+                  Закрыть
+                </Button>
+                <GradientButton
+                  onClick={() => navigate(`/booking/${selectedCar.id}`)}
+                  startIcon={<CarRental />}
+                >
+                  Арендовать
+                </GradientButton>
+              </DialogActions>
+            </Box>
+          )}
+        </Dialog>
+
+        <Dialog
+          open={isImageDialogOpen}
+          onClose={handleCloseImageDialog}
+          maxWidth="md"
+          fullWidth
+          sx={{ '& .MuiDialog-paper': { bgcolor: 'transparent', boxShadow: 'none' } }}
+        >
+          {selectedCar && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <img
+                src={`https://localhost:7154${selectedCar.imagePath}`}
+                alt={selectedCar.model}
+                style={{
+                  maxWidth: '90vw',
+                  maxHeight: '90vh',
+                  borderRadius: 16,
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+                }}
+              />
+              <Button
+                onClick={handleCloseImageDialog}
+                sx={{
+                  position: 'absolute',
+                  top: 16,
+                  right: 16,
+                  color: 'white',
+                  bgcolor: 'rgba(0,0,0,0.5)',
+                  '&:hover': { bgcolor: 'rgba(0,0,0,0.7)' }
+                }}
+              >
+                <Close fontSize="large" />
+              </Button>
+            </Box>
+          )}
+        </Dialog>
+      </Box>
     </Box>
   );
 };
 
-export default Page2;
+export default CarMapPage;

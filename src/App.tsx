@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import { useState } from 'react';
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { Typography } from "@mui/material";
@@ -15,6 +16,10 @@ import CarForm from "./components/CarForm";
 import UpdateCar from "./components/UpdateCar";
 import AdminCarManagement from "./components/AdminCarManagement";
 import AdminReferenceManagement from "./components/AdminReferenceManagement";
+import Header from "./components/Layout/Header";
+import SideMenu from "./components/Layout/SideMenu";
+import ProfilePage from "./components/Pages/ProfilePage";
+
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boolean }> = ({
   children,
@@ -32,6 +37,8 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boole
 };
 
 const App: React.FC = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <AuthProvider>
       <Layout>
@@ -40,7 +47,7 @@ const App: React.FC = () => {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/page1" element={<Page1 />} />
-
+          <Route path="/profile" element={<ProfilePage />} />
           {/* Каталог автомобилей (доступен всем) */}
           <Route path="/cars" element={<CarCatalog />} />
           <Route path="/cars/:id" element={<CarDetails />} />
@@ -52,6 +59,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="/page3"
             element={
@@ -132,6 +140,7 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+          
           <Route path="*" element={<Typography>Page not found</Typography>} />
         </Routes>
       </Layout>

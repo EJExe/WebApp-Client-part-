@@ -15,11 +15,16 @@ import MenuIcon from "@mui/icons-material/Menu";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-const Header = ({ toggleDrawer }: { toggleDrawer: () => void }) => {
+interface HeaderProps {
+  onMenuToggle: () => void;
+}
+
+const Header = ({ onMenuToggle }: HeaderProps) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -36,16 +41,16 @@ const Header = ({ toggleDrawer }: { toggleDrawer: () => void }) => {
   };
 
   return (
-    <AppBar position="fixed">
+    <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
       <Toolbar>
-        <IconButton
-          color="inherit"
+      <IconButton
           edge="start"
-          onClick={toggleDrawer}
-          sx={{ mr: 2, display: { md: "none" } }}
+          color="inherit"
+          onClick={onMenuToggle}
         >
-          <MenuIcon />
+          <MenuIcon /> 
         </IconButton>
+
         <Typography
           variant="h6"
           sx={{ flexGrow: 1, fontWeight: 700, cursor: "pointer" }}
