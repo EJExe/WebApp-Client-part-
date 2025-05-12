@@ -20,6 +20,7 @@ import Header from "./components/Layout/Header";
 import SideMenu from "./components/Layout/SideMenu";
 import ProfilePage from "./components/Pages/ProfilePage";
 import { OrderProvider } from "./context/OrderContext";
+import AdminOrdersPage from "./components/Pages/AdminOrdersPage";
 
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boolean }> = ({
@@ -94,6 +95,16 @@ const App: React.FC = () => {
               </ProtectedRoute>
             }
           />
+
+          <Route
+            path="/admin/order"
+            element={
+              <ProtectedRoute adminOnly>
+                <AdminOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          
           <Route
             path="/admin/body-types"
             element={

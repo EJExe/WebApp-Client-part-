@@ -7,6 +7,8 @@ interface OrderContextType {
   createOrder: (carId: number) => Promise<void>;
   fetchOrders: () => Promise<void>;
   completeOrder: (orderId: number) => Promise<void>;
+  confirmOrder: (orderId: number) => Promise<void>;
+  cancelOrder: (orderId: number) => Promise<void>;
 }
 
 const OrderContext = createContext<OrderContextType | undefined>(undefined);
@@ -18,6 +20,16 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const data = await OrderService.getOrders();
     setOrders(data);
   }, []);
+
+  const confirmOrder = useCallback(async (orderId: number) => {
+    await OrderService.confirmOrder(orderId);
+    await fetchOrders();
+  }, [fetchOrders]);
+
+  const cancelOrder = useCallback(async (orderId: number) => {
+    await OrderService.cancelOrder(orderId);
+    await fetchOrders();
+  }, [fetchOrders]);
 
   const completeOrder = useCallback(async (orderId: number) => {
     await OrderService.completeOrder(orderId);
@@ -32,7 +44,7 @@ export const OrderProvider: React.FC<{ children: ReactNode }> = ({ children }) =
 
   return (
     <OrderContext.Provider
-      value={{ orders, createOrder, fetchOrders, completeOrder }}
+      value={{ orders, createOrder, fetchOrders, completeOrder, confirmOrder, cancelOrder }}
     >
       {children}
     </OrderContext.Provider>

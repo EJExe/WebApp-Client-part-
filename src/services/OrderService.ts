@@ -70,6 +70,48 @@ class OrderService {
     }
   }
 
+  async confirmOrder(orderId: number): Promise<void> {
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("Требуется авторизация");
+      
+      await axios.put(
+        `${this.baseUrl}/api/orders/${orderId}/confirm`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          withCredentials: true
+        }
+      );
+    } catch (error: any) {
+      Error(error);
+    }
+  }
+
+  async cancelOrder(orderId: number): Promise<void> {
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("Требуется авторизация");
+      
+      await axios.put(
+        `${this.baseUrl}/api/orders/${orderId}/cancel`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          withCredentials: true
+        }
+      );
+    } catch (error: any) {
+      Error(error);
+    }
+  }
+
   async createOrder(carId: number, userId?: string) {
     try {
       const token = authService.getToken();

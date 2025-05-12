@@ -313,7 +313,7 @@ const CarMapPage = () => {
                   Закрыть
                 </Button>
                 <GradientButton
-                  onClick={() => navigate(`/booking/${selectedCar.id}`)}
+                  onClick={() => navigate(`/cars/${selectedCar.id}`)}
                   startIcon={<CarRental />}
                 >
                   Арендовать

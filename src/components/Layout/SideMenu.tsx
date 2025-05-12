@@ -118,6 +118,19 @@ const SideMenu = ({ open, onMenuItemClick, onClose }: SideMenuProps) => {
                 sx={{ color: 'white', opacity: open ? 1 : 0 }} 
               />
             </ListItemButton>
+
+            <ListItemButton 
+              onClick={() => onMenuItemClick('/admin/order')}
+              sx={{ minHeight: 48 }}
+            >
+              <ListItemIcon sx={{ color: 'white', minWidth: '40px' }}>
+                <ConstructionIcon sx={{ color: 'inherit' }} />
+              </ListItemIcon>
+              <ListItemText 
+                primary="Управление заявками" 
+                sx={{ color: 'white', opacity: open ? 1 : 0 }} 
+              />
+            </ListItemButton>
           </>
         )}
       </List>
