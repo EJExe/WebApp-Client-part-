@@ -39,22 +39,53 @@ import { Car } from "../../models/car.models";
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { Link } from "react-router-dom";
+import { authService } from "../../services/AuthService";
 
 const ProfilePage = () => {
   const { user } = useAuth();
   const { orders, fetchOrders, completeOrder} = useOrderContext();
   const [loading, setLoading] = useState(true);
   const [carsData, setCarsData] = useState<Map<number, Car>>(new Map());
+  const [filteredOrders, setFilteredOrders] = useState<Order[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   
+  // Extract user ID from token
+  useEffect(() => {
+    const token = authService.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const userId = payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+                      payload.sub ||
+                      payload.userId;
+        setCurrentUserId(userId);
+      } catch (error) {
+        console.error('Error decoding token:', error);
+      }
+    }
+  }, []);
   
   const loadData = async () => {
     setLoading(true);
     try {
       await fetchOrders();
       
-      // Fetch car details for each order
+      // Create a set to store car IDs
       const carIds = new Set<number>();
-      orders.forEach(order => carIds.add(order.carId));
+      
+      // Filter orders to only show current user's orders
+      if (currentUserId) {
+        const userOrders = orders.filter(order =>
+          order.userId === currentUserId
+        );
+        setFilteredOrders(userOrders);
+        
+        // Fetch car details for each order
+        userOrders.forEach(order => carIds.add(order.carId));
+      } else {
+        setFilteredOrders([]);
+        // No orders to fetch car details for
+      }
       
       const carsMap = new Map<number, Car>();
       for (const carId of carIds) {
@@ -185,9 +216,9 @@ const ProfilePage = () => {
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                 <CircularProgress />
               </Box>
-            ) : orders.length > 0 ? (
+            ) : filteredOrders.length > 0 ? (
               <Stack spacing={2} sx={{ mt: 2 }}>
-                {orders.map((order) => {
+                {filteredOrders.map((order) => {
                   const car = carsData.get(order.carId);
                   return (
                     <Card key={order.orderId} variant="outlined" sx={{ borderRadius: 2 }}>

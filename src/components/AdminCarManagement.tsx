@@ -557,6 +557,7 @@ import {
     IconButton,
     InputAdornment,
     Paper,
+    Pagination,
     styled
 } from "@mui/material";
 import {
@@ -614,6 +615,11 @@ const AdminCarManagement: React.FC = () => {
     const [driveTypes, setDriveTypes] = useState<CarDriveType[]>([]);
     const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
     const [features, setFeatures] = useState<CarFeature[]>([]);
+    const [pagination, setPagination] = useState({
+        totalCount: 0,
+        pageNumber: 1,
+        pageSize: 9
+    });
     const [form, setForm] = useState<CarCreateDto>({
         brandId: 0,
         model: "",
@@ -654,7 +660,10 @@ const AdminCarManagement: React.FC = () => {
                     fuelTypesData,
                     featuresData,
                 ] = await Promise.all([
-                    carService.getCars(),
+                    carService.getCars({
+                        pageNumber: pagination.pageNumber,
+                        pageSize: pagination.pageSize
+                    }),
                     referenceService.getBrands(),
                     referenceService.getBodyTypes(),
                     referenceService.getCategories(),
@@ -670,6 +679,10 @@ const AdminCarManagement: React.FC = () => {
                 setDriveTypes(driveTypesData);
                 setFuelTypes(fuelTypesData);
                 setFeatures(featuresData);
+                setPagination(prev => ({
+                    ...prev,
+                    totalCount: result.totalCount
+                }));
             } catch (error) {
                 setError("Failed to load data");
                 console.error(error);
@@ -677,7 +690,7 @@ const AdminCarManagement: React.FC = () => {
         };
 
         fetchData();
-    }, [user, navigate]);
+    }, [user, navigate, pagination.pageNumber, pagination.pageSize]);
 
     const handleEdit = (car: Car) => {
         console.log("Editing car:", car);
@@ -707,9 +720,17 @@ const AdminCarManagement: React.FC = () => {
         try {
             const newLeasingStatus = !isLeasingAvailable;
             console.log(`Toggling leasing status for car ID ${id} to: ${newLeasingStatus}`);
-            const carsData = await carService.getCars();
+            const carsData = await carService.getCars({
+                pageNumber: pagination.pageNumber,
+                pageSize: pagination.pageSize
+            });
             console.log("Updated cars after toggle:", carsData.cars);
             setCars(carsData.cars);
+            setPagination({
+                pageNumber: pagination.pageNumber, // Preserve current page number
+                pageSize: pagination.pageSize,
+                totalCount: carsData.totalCount
+            });
             setSuccess(`Leasing status ${newLeasingStatus ? "enabled" : "disabled"} successfully!`);
         } catch (error: any) {
             setError(error.message || "Failed to toggle leasing status");
@@ -812,9 +833,17 @@ const AdminCarManagement: React.FC = () => {
                 isLeasingAvailable: false,
             });
             setEditingId(null);
-            const carsData = await carService.getCars();
+            const carsData = await carService.getCars({
+                pageNumber: pagination.pageNumber,
+                pageSize: pagination.pageSize
+            });
             console.log("Updated cars:", carsData.cars);
             setCars(carsData.cars);
+            setPagination({
+                pageNumber: pagination.pageNumber, // Preserve current page number
+                pageSize: pagination.pageSize,
+                totalCount: carsData.totalCount
+            });
         } catch (error: any) {
             setError(error.message || "Failed to save car");
             console.error("Error in handleSubmit:", error);
@@ -827,12 +856,24 @@ const AdminCarManagement: React.FC = () => {
         try {
             await carService.delete(id);
             setSuccess("Car deleted successfully!");
-            const carsData = await carService.getCars();
+            const carsData = await carService.getCars({
+                pageNumber: pagination.pageNumber,
+                pageSize: pagination.pageSize
+            });
             setCars(carsData.cars);
+            setPagination({
+                pageNumber: pagination.pageNumber, // Preserve current page number
+                pageSize: pagination.pageSize,
+                totalCount: carsData.totalCount
+            });
         } catch (error: any) {
             setError(error.message || "Failed to delete car");
             console.error(error);
         }
+    };
+
+    const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+        setPagination(prev => ({ ...prev, pageNumber: value }));
     };
 
     return (
@@ -1244,6 +1285,20 @@ const AdminCarManagement: React.FC = () => {
                     </Grid>
                 ))}
             </Grid>
+
+            {/* Pagination */}
+            {cars.length > 0 && (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4, mb: 4 }}>
+                    <Pagination
+                        count={Math.ceil(pagination.totalCount / pagination.pageSize)}
+                        page={pagination.pageNumber}
+                        onChange={handlePageChange}
+                        color="primary"
+                        shape="rounded"
+                        size="large"
+                    />
+                </Box>
+            )}
         </Container>
     );
 };

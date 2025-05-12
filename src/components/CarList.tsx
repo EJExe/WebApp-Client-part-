@@ -1,19 +1,36 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CarContext } from "../context/ProjectContext";
 import { Car } from "../models/car.models";
+import { Pagination, Box } from "@mui/material";
 
 const BASE_API_URL = "https://localhost:7154";
 
 const CarList: React.FC = () => {
   const context = useContext(CarContext);
   const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const carsPerPage = 9;
+
+  // Handle page change
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    console.log("Page changed to:", value);
+    setPage(value);
+    // Scroll to top when page changes
+    window.scrollTo(0, 0);
+  };
 
   if (!context) {
     return <div>No context available!</div>;
   }
 
   const { cars } = context;
+  
+  // Calculate pagination
+  const indexOfLastCar = page * carsPerPage;
+  const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
+  const totalPages = Math.ceil(cars.length / carsPerPage);
 
   return (
     <div style={{ padding: "20px", maxWidth: "1200px", margin: "0 auto" }}>
@@ -51,7 +68,7 @@ const CarList: React.FC = () => {
             gap: "20px",
           }}
         >
-          {cars.map((car) => (
+          {currentCars.map((car) => (
             <div
               key={car.id}
               style={{
@@ -136,6 +153,35 @@ const CarList: React.FC = () => {
           ))}
         </div>
       )}
+      
+      {/* Pagination */}
+      {cars.length > 0 && (
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          mt: 4,
+          mb: 4,
+          padding: '10px',
+          backgroundColor: '#f5f5f5',
+          borderRadius: '8px'
+        }}>
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={handlePageChange}
+            color="primary"
+            shape="rounded"
+            size="large"
+            showFirstButton
+            showLastButton
+            siblingCount={1}
+            boundaryCount={1}
+          />
+        </Box>
+      )}
+      <div style={{ textAlign: 'center', marginTop: '10px' }}>
+        Page {page} of {totalPages} | Showing cars {indexOfFirstCar + 1} to {Math.min(indexOfLastCar, cars.length)} of {cars.length}
+      </div>
     </div>
   );
 };

@@ -40,7 +40,7 @@ const CarCatalog: React.FC = () => {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [filters, setFilters] = useState<CarFilterDto>({
     pageNumber: 1,
-    pageSize: 12,
+    pageSize: 9,
     brandId: undefined,
     minPrice: undefined,
     maxPrice: undefined
@@ -48,7 +48,7 @@ const CarCatalog: React.FC = () => {
   const [pagination, setPagination] = useState({
     totalCount: 0,
     pageNumber: 1,
-    pageSize: 12
+    pageSize: 9
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -57,21 +57,34 @@ const CarCatalog: React.FC = () => {
     const fetchData = async () => {
       setIsLoading(true);
       try {
+        console.log("Fetching cars with filters:", JSON.stringify(filters, null, 2));
         const [result, brandsData] = await Promise.all([
           carService.getCars(filters),
           referenceService.getBrands(),
         ]);
         
+        console.log("API response:", JSON.stringify(result, null, 2));
+        
         setCars(result.cars);
         setBrands(brandsData);
+        
+        // Ensure we're using the correct page number from the response or from our filters
+        const pageNumber = result.pageNumber || filters.pageNumber || 1;
+        
         setPagination({
-          pageNumber: result.pageNumber || 1,
-          pageSize: result.pageSize || 12,
+          pageNumber: pageNumber,
+          pageSize: result.pageSize || filters.pageSize || 5,
+          totalCount: result.totalCount
+        });
+        
+        console.log("Updated pagination state:", {
+          pageNumber: pageNumber,
+          pageSize: result.pageSize || filters.pageSize || 5,
           totalCount: result.totalCount
         });
       } catch (error) {
         setError("Ошибка загрузки данных");
-        console.error(error);
+        console.error("Error fetching data:", error);
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +101,8 @@ const CarCatalog: React.FC = () => {
     setPagination(prev => ({ ...prev, pageNumber: 1 }));
   };
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
+    console.log("Changing page to:", value);
     setFilters(prev => ({ ...prev, pageNumber: value }));
   };
 
@@ -208,7 +222,16 @@ const CarCatalog: React.FC = () => {
             ))}
           </Grid>
 
-          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+          <Box sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            mt: 4,
+            mb: 4,
+            padding: '15px',
+            backgroundColor: '#f5f5f5',
+            borderRadius: '8px'
+          }}>
             <Pagination
               count={Math.ceil(pagination.totalCount / pagination.pageSize)}
               page={pagination.pageNumber}
@@ -216,7 +239,15 @@ const CarCatalog: React.FC = () => {
               color="primary"
               shape="rounded"
               size="large"
+              showFirstButton
+              showLastButton
+              siblingCount={1}
+              boundaryCount={1}
             />
+            <Typography sx={{ mt: 2, color: 'text.secondary' }}>
+              Страница {pagination.pageNumber} из {Math.ceil(pagination.totalCount / pagination.pageSize)} |
+              Показано {cars.length} из {pagination.totalCount} автомобилей
+            </Typography>
           </Box>
         </>
       )}
