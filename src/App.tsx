@@ -19,6 +19,7 @@ import AdminReferenceManagement from "./components/AdminReferenceManagement";
 import Header from "./components/Layout/Header";
 import SideMenu from "./components/Layout/SideMenu";
 import ProfilePage from "./components/Pages/ProfilePage";
+import { OrderProvider } from "./context/OrderContext";
 
 
 const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boolean }> = ({
@@ -41,6 +42,7 @@ const App: React.FC = () => {
 
   return (
     <AuthProvider>
+      <OrderProvider>
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -144,6 +146,7 @@ const App: React.FC = () => {
           <Route path="*" element={<Typography>Page not found</Typography>} />
         </Routes>
       </Layout>
+      </OrderProvider>
     </AuthProvider>
   );
 };

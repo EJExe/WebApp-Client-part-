@@ -63,6 +63,22 @@ class AuthService {
     return localStorage.getItem(this.tokenKey)
   }
 
+  getCurrentUserId(): string | null {
+    const token = this.getToken(); // Ваш метод получения токена
+    if (!token) return null;
+    
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      // Look for the nameidentifier claim which contains the user ID
+      return payload["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+             payload.sub ||
+             payload.userId; // Fallback to other common claims
+    } catch (error) {
+      console.error('Error decoding token:', error);
+      return null;
+    }
+  }
+
   removeToken(): void {
     // Метод для удаления токена из `localStorage`.
     localStorage.removeItem(this.tokenKey)
@@ -75,5 +91,5 @@ class AuthService {
   }
 }
 
-export const authService = new AuthService("")
-// Экспортируем экземпляр класса `AuthService` с пустым базовым URL.
+export const authService = new AuthService("https://localhost:7154")
+// Экспортируем экземпляр класса `AuthService` с корректным базовым URL.

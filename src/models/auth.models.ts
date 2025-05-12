@@ -22,4 +22,10 @@ export interface LoginRequest {
     message?: string
     errors?: Record<string, string[]>
   }
+
+  export interface RegisterResponse {
+  token: string
+  userName: string
+  userRole: string
+}
   

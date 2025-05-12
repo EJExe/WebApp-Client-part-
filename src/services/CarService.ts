@@ -1,4 +1,7 @@
 import { Car, CarSearchResult, CarCreateDto, CarFilterDto } from "../models/car.models";
+import axios from "axios";
+
+const API_URL = "https://localhost:7154/api";
 
 export class CarService {
     private baseUrl: string;
@@ -41,6 +44,9 @@ export class CarService {
     }
 
     async getById(id: number): Promise<Car> {
+         if (isNaN(id)) {
+            throw new Error("Неверный идентификатор автомобиля");
+        }
         const token = localStorage.getItem("jwtToken");
         console.log("Token for getById:", token);
         const response = await fetch(`${this.baseUrl}/api/Cars/${id}`, {
@@ -215,6 +221,38 @@ export class CarService {
             console.log("Server response for updateWithImage: No JSON content (status:", response.status, ")");
         }
     }
+
+    async createRental(rentalData: { carId: number; startDate: Date; endDate: Date }) {
+        try {
+            const token = localStorage.getItem("jwtToken");
+            if (!token) throw new Error("Требуется авторизация");
+
+            const response = await axios.post(
+            "https://localhost:7154/api/Orders",
+            {
+                carId: rentalData.carId,
+                startDate: rentalData.startDate.toISOString(),
+                endDate: rentalData.endDate.toISOString()
+            },
+            {
+                headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json"
+                },
+                maxRedirects: 0 // Блокируем перенаправления
+            }
+            );
+            
+            return response.data;
+        } catch (error:any) {
+            // Обрабатываем 401 ошибку отдельно
+            if (error.response?.status === 401) {
+            throw new Error("Ошибка авторизации: недействительный токен");
+            }
+            throw new Error(error.response?.data?.title || error.message);
+        }
+        }
+
 
     async delete(id: number): Promise<void> {
         const token = localStorage.getItem("jwtToken");

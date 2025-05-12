@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { 
   Box, 
@@ -10,15 +10,20 @@ import {
   IconButton,
   CardMedia,
   Grid,
-  Chip
+  Chip,
+  Snackbar,
+  Alert
 } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { Car, BodyType, CarCategory, CarDriveType, FuelType, CarFeature, Brand } from "../models/car.models";
 import { referenceService } from "../services/ReferenceService";
 import { carService } from "../services/CarService";
+import { useOrderContext } from "../context/OrderContext";
+import { authService } from "../services/AuthService";
 
 const CarDetails: React.FC = () => {
     const { id } = useParams<{ id: string }>();
+    const { createOrder } = useOrderContext();
     const [car, setCar] = useState<Car | null>(null);
     const [brands, setBrands] = useState<Brand[]>([]);
     const navigate = useNavigate();
@@ -30,6 +35,11 @@ const CarDetails: React.FC = () => {
     const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
     const [features, setFeatures] = useState<CarFeature[]>([]);
     const [isImageDialogOpen, setIsImageDialogOpen] = useState(false);
+    const [bookingStatus, setBookingStatus] = useState<{
+      loading: boolean;
+      error: string | null;
+      success: boolean;
+    }>({ loading: false, error: null, success: false });
 
     useEffect(() => {
         const fetchData = async () => {
@@ -72,6 +82,28 @@ const CarDetails: React.FC = () => {
     const handleImageClick = () => {
         setIsImageDialogOpen(true);
     };
+
+    const handleBookNow = async () => {
+        if (!car) return;
+        // Check if user is authenticated
+        if (!authService.isAuthenticated()) {
+            alert('Пользователь не авторизован');
+            return;
+        }
+        setBookingStatus({ loading: true, error: null, success: false });
+        try {
+            await createOrder(car.id);
+            setBookingStatus({ loading: false, error: null, success: true });
+            setTimeout(() => navigate("/profile"), 2000); // Перенаправление на страницу профиля через 2 секунды
+        } catch (error) {
+            setBookingStatus({ 
+            loading: false, 
+            error: "Ошибка при создании бронирования", 
+            success: false 
+            });
+        }
+    };
+
 
     const handleCloseImageDialog = () => {
         setIsImageDialogOpen(false);
@@ -229,16 +261,42 @@ const CarDetails: React.FC = () => {
             <Button
                 variant="contained"
                 size="large"
-                onClick={() => navigate(`/booking/${car.id}`)}
+                onClick={handleBookNow}
+                disabled={bookingStatus.loading}
                 sx={{ 
                     mt: 4,
                     px: 6,
                     py: 2,
-                    fontSize: '1.1rem'
+                    fontSize: '1.1rem',
+                    position: 'relative'
                 }}
             >
-                Забронировать сейчас
+                {bookingStatus.loading ? (
+                    <CircularProgress size={24} sx={{ color: 'white' }} />
+                ) : (
+                    'Забронировать сейчас'
+                )}
             </Button>
+
+            <Snackbar
+                open={bookingStatus.success}
+                autoHideDuration={3000}
+                onClose={() => setBookingStatus(prev => ({...prev, success: false}))}
+            >
+                <Alert severity="success" sx={{ width: '100%' }}>
+                    Бронирование успешно создано!
+                </Alert>
+            </Snackbar>
+
+            <Snackbar
+                open={!!bookingStatus.error}
+                autoHideDuration={3000}
+                onClose={() => setBookingStatus(prev => ({...prev, error: null}))}
+            >
+                <Alert severity="error" sx={{ width: '100%' }}>
+                    {bookingStatus.error}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 };
