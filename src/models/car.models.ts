@@ -88,20 +88,3 @@ export interface CarFeature {
   name: string;
 }
 
-export interface Rental {
-  id: number;
-  carId: number;
-  userId: number;
-  startDate: string;
-  endDate: string;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
-  totalPrice: number;
-}
-
-export interface RentalCreateDto {
-  carId: number
-  userId: number
-  startDate: string
-  endDate: string
-  status: "pending" | "confirmed" | "completed" | "cancelled"
-}

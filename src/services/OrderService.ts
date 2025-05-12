@@ -1,5 +1,5 @@
 import { Order } from "../models/order";
-import { authService } from "../services/AuthService"
+import { authService } from "../services/AuthService";
 import axios from "axios";
 
 class OrderService {
@@ -46,6 +46,30 @@ class OrderService {
     }
   }
 
+  async completeOrder(orderId: number): Promise<void> {
+    try {
+      const token = authService.getToken();
+      if (!token) throw new Error("Требуется авторизация");
+      
+      await axios.post(
+        `${this.baseUrl}/api/orders/${orderId}/complete`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          withCredentials: true
+        }
+      );
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new Error("Ошибка авторизации: недействительный токен");
+      }
+      throw new Error(error.response?.data?.title || error.message);
+    }
+  }
+
   async createOrder(carId: number, userId?: string) {
     try {
       const token = authService.getToken();
@@ -89,82 +113,6 @@ class OrderService {
         throw new Error("Ошибка авторизации: недействительный токен");
       }
       throw new Error(error.response?.data?.title || error.message);
-    }
-  }
-
-  async cancelOrder(orderId: number): Promise<void> {
-    try {
-      const token = authService.getToken();
-      if (!token) throw new Error("Требуется авторизация");
-      
-      await axios.put(`${this.baseUrl}/api/orders/cancel/${orderId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        withCredentials: true
-      });
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        throw new Error("Ошибка авторизации: недействительный токен");
-      }
-      throw new Error(error.response?.data?.title || "Ошибка отмены заказа");
-    }
-  }
-
-  async confirmOrder(orderId: number): Promise<Order> {
-    try {
-      const token = authService.getToken();
-      if (!token) throw new Error("Требуется авторизация");
-      
-      const response = await axios.put(`${this.baseUrl}/api/orders/confirm/${orderId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        },
-        withCredentials: true
-      });
-      
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 401) {
-        throw new Error("Ошибка авторизации: недействительный токен");
-      }
-      throw new Error(error.response?.data?.title || "Ошибка подтверждения заказа");
-    }
-  }
-
-  async completeOrder(orderId: number): Promise<boolean> {
-    try {
-      // Получаем токен из authService вместо localStorage напрямую
-      const token = authService.getToken();
-      if (!token) throw new Error("Требуется авторизация");
-      
-      console.log(`Отправка запроса на завершение заказа ${orderId}`);
-      console.log(`Используемый токен: ${token}`);
-      
-      // Добавляем withCredentials: true для передачи cookies
-      const response = await axios.post(
-        `${this.baseUrl}/api/orders/${orderId}/complete`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          },
-          withCredentials: true
-        }
-      );
-      
-      console.log("Ответ сервера:", response);
-      return true;
-    } catch (error: any) {
-      console.error("Ошибка при завершении заказа:", error);
-      
-      if (error.response?.status === 401) {
-        throw new Error("Ошибка авторизации: недействительный токен");
-      }
-      throw new Error(error.response?.data?.title || "Ошибка завершения аренды");
     }
   }
 }

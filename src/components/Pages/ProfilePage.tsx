@@ -42,9 +42,10 @@ import { Link } from "react-router-dom";
 
 const ProfilePage = () => {
   const { user } = useAuth();
-  const { orders, fetchOrders, completeOrder } = useOrderContext();
+  const { orders, fetchOrders, completeOrder} = useOrderContext();
   const [loading, setLoading] = useState(true);
   const [carsData, setCarsData] = useState<Map<number, Car>>(new Map());
+  
   
   const loadData = async () => {
     setLoading(true);
@@ -239,9 +240,13 @@ const ProfilePage = () => {
                                   color="success"
                                   size="small"
                                   startIcon={<Done />}
-                                  onClick={() => {
-                                    if (window.confirm('Вы уверены, что хотите завершить аренду?')) {
-                                      completeOrder(order.orderId);
+                                  onClick={async () => {
+                                    try {
+                                      await completeOrder(order.orderId);
+                                      // Можно добавить уведомление об успехе
+                                    } catch (error) {
+                                      // Обработка ошибок
+                                      console.error("Ошибка завершения аренды:", error);
                                     }
                                   }}
                                   disabled={order.status.toLowerCase() === 'completed'}
