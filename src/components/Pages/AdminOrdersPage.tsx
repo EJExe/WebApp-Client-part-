@@ -1,25 +1,30 @@
-import { 
-  Container, 
-  Typography, 
-  Card, 
-  CardContent, 
-  Grid, 
-  Button, 
-  CircularProgress, 
+/**
+ * @fileoverview Admin page for managing orders
+ * (Страница администратора для управления заказами)
+ * @module components/Pages/AdminOrdersPage
+ */
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  Grid,
+  Button,
+  CircularProgress,
   Box,
   Avatar,
   Chip,
   Divider,
   Stack
 } from "@mui/material";
-import { 
-  CheckCircle, 
-  Cancel, 
-  Done, 
-  DirectionsCar, 
-  Person, 
-  CalendarToday, 
-  Paid 
+import {
+  CheckCircle,
+  Cancel,
+  Done,
+  DirectionsCar,
+  Person,
+  CalendarToday,
+  Paid
 } from "@mui/icons-material";
 import { useEffect, useState } from 'react';
 import { useOrderContext } from "../../context/OrderContext";
@@ -29,12 +34,28 @@ import { Car } from "../../models/car.models";
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 
+/**
+ * @component
+ * @description Admin page component for managing orders
+ * (Компонент страницы администратора для управления заказами)
+ * @returns {JSX.Element} Rendered component
+ * (Отрендеренный компонент)
+ */
 const AdminOrdersPage = () => {
   const { orders, fetchOrders, confirmOrder, cancelOrder, completeOrder } = useOrderContext();
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const [carsData, setCarsData] = useState<Map<number, Car>>(new Map());
 
+  /**
+   * @function formatDate
+   * @description Formats a date string to a localized format
+   * (Форматирует строку даты в локализованный формат)
+   * @param {string} dateString - Date string to format
+   * (Строка даты для форматирования)
+   * @returns {string} Formatted date string
+   * (Отформатированная строка даты)
+   */
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -44,6 +65,15 @@ const AdminOrdersPage = () => {
     }
   };
 
+  /**
+   * @function getStatusChip
+   * @description Returns a chip component based on order status
+   * (Возвращает компонент чипа на основе статуса заказа)
+   * @param {string} status - Order status
+   * (Статус заказа)
+   * @returns {JSX.Element} Chip component with appropriate color and label
+   * (Компонент чипа с соответствующим цветом и меткой)
+   */
   const getStatusChip = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
@@ -59,6 +89,14 @@ const AdminOrdersPage = () => {
     }
   };
 
+  /**
+   * @async
+   * @function loadData
+   * @description Loads orders and car data
+   * (Загружает заказы и данные автомобилей)
+   * @returns {Promise<void>} Promise that resolves when data is loaded
+   * (Промис, который разрешается, когда данные загружены)
+   */
   const loadData = async () => {
     setLoading(true);
     try {
@@ -86,6 +124,10 @@ const AdminOrdersPage = () => {
     }
   };
 
+  /**
+   * @description Effect hook to load data on component mount
+   * (Хук эффекта для загрузки данных при монтировании компонента)
+   */
   useEffect(() => {
     loadData();
   }, []);

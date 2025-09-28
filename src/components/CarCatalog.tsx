@@ -22,6 +22,11 @@ import { referenceService } from "../services/ReferenceService";
 import { carService } from "../services/CarService";
 import { DirectionsCar, MonetizationOn, CalendarToday, ZoomIn } from "@mui/icons-material";
 
+/**
+ * @component
+ * @description A styled button component with gradient background and hover effects
+ * (Стилизованная кнопка с градиентным фоном и эффектами при наведении)
+ */
 const GradientButton = styled(Button)({
   background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
   border: 0,
@@ -34,10 +39,35 @@ const GradientButton = styled(Button)({
   },
 });
 
+/**
+ * @component
+ * @description Car catalog component that displays a filterable and paginated list of cars
+ * Uses React Router for navigation to individual car details
+ * (Компонент каталога автомобилей, отображающий фильтруемый и пагинированный список автомобилей.
+ * Использует React Router для навигации к деталям отдельных автомобилей)
+ * @returns {JSX.Element} Rendered car catalog with filters and pagination
+ * (Отрендеренный каталог автомобилей с фильтрами и пагинацией)
+ */
 const CarCatalog: React.FC = () => {
+  /**
+   * @type {[Car[], React.Dispatch<React.SetStateAction<Car[]>>]} State for storing car data
+   * (Состояние для хранения данных автомобилей)
+   */
   const [cars, setCars] = useState<Car[]>([]);
+  /**
+   * @type {Function} React Router navigate function for programmatic navigation
+   * (Функция навигации React Router для программной навигации)
+   */
   const navigate = useNavigate();
+  /**
+   * @type {[Brand[], React.Dispatch<React.SetStateAction<Brand[]>>]} State for storing brand data for filtering
+   * (Состояние для хранения данных о брендах для фильтрации)
+   */
   const [brands, setBrands] = useState<Brand[]>([]);
+  /**
+   * @type {[CarFilterDto, React.Dispatch<React.SetStateAction<CarFilterDto>>]} State for filter criteria
+   * (Состояние для критериев фильтрации)
+   */
   const [filters, setFilters] = useState<CarFilterDto>({
     pageNumber: 1,
     pageSize: 9,
@@ -45,15 +75,30 @@ const CarCatalog: React.FC = () => {
     minPrice: undefined,
     maxPrice: undefined
   });
+  /** @type {[Object, React.Dispatch<React.SetStateAction<Object>>]} State for pagination information */
   const [pagination, setPagination] = useState({
     totalCount: 0,
     pageNumber: 1,
     pageSize: 9
   });
+  /** @type {[boolean, React.Dispatch<React.SetStateAction<boolean>>]} Loading state indicator */
   const [isLoading, setIsLoading] = useState(false);
+  /** @type {[string, React.Dispatch<React.SetStateAction<string>>]} Error message state */
   const [error, setError] = useState("");
 
+  /**
+   * @description Effect hook to fetch cars and brands data when filters change
+   * (Хук эффекта для получения данных об автомобилях и брендах при изменении фильтров)
+   * @param {CarFilterDto} filters - The dependency array containing filter criteria
+   * (Массив зависимостей, содержащий критерии фильтрации)
+   */
   useEffect(() => {
+    /**
+     * @async
+     * @function fetchData
+     * @description Fetches car and brand data from the API
+     * (Получает данные об автомобилях и брендах из API)
+     */
     const fetchData = async () => {
       setIsLoading(true);
       try {
@@ -93,6 +138,15 @@ const CarCatalog: React.FC = () => {
     fetchData();
   }, [filters]);
 
+  /**
+   * @function handleFilterChange
+   * @description Updates filter state when a filter value changes and resets pagination to page 1
+   * (Обновляет состояние фильтра при изменении значения фильтра и сбрасывает пагинацию на страницу 1)
+   * @param {keyof CarFilterDto} key - The filter property to update
+   * (Свойство фильтра для обновления)
+   * @param {number | string} value - The new value for the filter
+   * (Новое значение для фильтра)
+   */
   const handleFilterChange = (key: keyof CarFilterDto, value: number | string) => {
     setFilters(prev => ({
       ...prev,
@@ -101,6 +155,15 @@ const CarCatalog: React.FC = () => {
     setPagination(prev => ({ ...prev, pageNumber: 1 }));
   };
 
+  /**
+   * @function handlePageChange
+   * @description Handles pagination page changes
+   * (Обрабатывает изменения страницы пагинации)
+   * @param {React.ChangeEvent<unknown>} event - The change event
+   * (Событие изменения)
+   * @param {number} value - The new page number
+   * (Новый номер страницы)
+   */
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     console.log("Changing page to:", value);
     setFilters(prev => ({ ...prev, pageNumber: value }));

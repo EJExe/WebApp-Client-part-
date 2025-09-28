@@ -1,536 +1,8 @@
-// import { useState, useEffect } from "react";
-// import { useNavigate } from "react-router-dom";
-// import { Car, CarCreateDto, BodyType, Brand, CarCategory, CarDriveType, FuelType, CarFeature } from "../models/car.models";
-// import { referenceService } from "../services/ReferenceService";
-// import { carService } from "../services/CarService";
-// import { useAuth } from "../context/AuthContext";
-// import {
-//     Box,
-//     Button,
-//     FormControl,
-//     InputLabel,
-//     Select,
-//     MenuItem,
-//     TextField,
-//     Typography,
-//     Grid,
-//     Container,
-//     Alert,
-//     CircularProgress,
-// } from "@mui/material";
-
-// const AdminCarManagement: React.FC = () => {
-//     const { user } = useAuth();
-//     const navigate = useNavigate();
-//     const [cars, setCars] = useState<Car[]>([]);
-//     const [brands, setBrands] = useState<Brand[]>([]);
-//     const [bodyTypes, setBodyTypes] = useState<BodyType[]>([]);
-//     const [categories, setCategories] = useState<CarCategory[]>([]);
-//     const [driveTypes, setDriveTypes] = useState<CarDriveType[]>([]);
-//     const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
-//     const [features, setFeatures] = useState<CarFeature[]>([]);
-//     const [form, setForm] = useState<CarCreateDto>({
-//         brandId: 0,
-//         model: "",
-//         year: 0,
-//         mileage: 0,
-//         color: "",
-//         seats: 0,
-//         pricePerDay: 0,
-//         latitude: 0,
-//         longitude: 0,
-//         bodyTypeId: 0,
-//         categoryId: 0,
-//         driveTypeId: 0,
-//         fuelTypeId: 0,
-//         featureIds: [],
-//         image: null,
-//         isLeasingAvailable: false, // Инициализация по умолчанию
-//     });
-//     const [editingId, setEditingId] = useState<number | null>(null);
-//     const [error, setError] = useState<string | null>(null);
-//     const [success, setSuccess] = useState<string | null>(null);
-//     const [isLoading, setIsLoading] = useState(false);
-
-//     useEffect(() => {
-//         if (user?.userRole !== "admin") {
-//             navigate("/");
-//             return;
-//         }
-
-//         const fetchData = async () => {
-//             try {
-//                 const [
-//                     result,
-//                     brandsData,
-//                     bodyTypesData,
-//                     categoriesData,
-//                     driveTypesData,
-//                     fuelTypesData,
-//                     featuresData,
-//                 ] = await Promise.all([
-//                     carService.getCars(),
-//                     referenceService.getBrands(),
-//                     referenceService.getBodyTypes(),
-//                     referenceService.getCategories(),
-//                     referenceService.getDriveTypes(),
-//                     referenceService.getFuelTypes(),
-//                     referenceService.getFeatures(),
-//                 ]);
-//                 setCars(result.cars);
-//                 setBrands(brandsData);
-//                 setBodyTypes(bodyTypesData);
-//                 setCategories(categoriesData);
-//                 setDriveTypes(driveTypesData);
-//                 setFuelTypes(fuelTypesData);
-//                 setFeatures(featuresData);
-//             } catch (error) {
-//                 setError("Failed to load data");
-//                 console.error(error);
-//             }
-//         };
-
-//         fetchData();
-//     }, [user, navigate]);
-
-//     const handleEdit = (car: Car) => {
-//         console.log("Editing car:", car);
-//         const isLeasingAvailable = car.isLeasingAvailable ?? false;
-//         console.log("Setting isLeasingAvailable to:", isLeasingAvailable);
-//         setEditingId(car.id);
-//         setForm({
-//             ...form,
-//             brandId: car.brandId,
-//             model: car.model,
-//             year: car.year,
-//             mileage: car.mileage,
-//             color: car.color,
-//             seats: car.seats,
-//             pricePerDay: car.pricePerDay,
-//             latitude: car.latitude,
-//             longitude: car.longitude,
-//             bodyTypeId: car.bodyTypeId,
-//             categoryId: car.categoryId,
-//             driveTypeId: car.driveTypeId,
-//             fuelTypeId: car.fuelTypeId,
-//             featureIds: car.featureIds || [],
-//             image: null,
-//             isLeasingAvailable: car.isLeasingAvailable ?? false,
-//         });
-//     };
-
-//     const handleSubmit = async (e: React.FormEvent) => {
-//         e.preventDefault();
-//         console.log("handleSubmit called with form:", form);
-//         setError(null);
-//         setSuccess(null);
-//         setIsLoading(true);
-        
-
-//         // Отладка значений полей
-//         console.log("Validation check:", {
-//             brandId: form.brandId,
-//             model: form.model,
-//             year: form.year,
-//             bodyTypeId: form.bodyTypeId,
-//             categoryId: form.categoryId,
-//             driveTypeId: form.driveTypeId,
-//             fuelTypeId: form.fuelTypeId,
-//             isLeasingDisabled: form.isLeasingAvailable,
-//         });
-
-//         // Валидация
-//         if (!form.brandId || form.brandId === 0) {
-//             setError("Please select a valid brand");
-//             console.log("Validation failed: Invalid brandId");
-//             return;
-//         }
-//         if (!form.model) {
-//             setError("Model is required");
-//             console.log("Validation failed: Model is empty");
-//             return;
-//         }
-//         if (!form.year || form.year < 1900) {
-//             setError("Valid year is required");
-//             console.log("Validation failed: Invalid year");
-//             return;
-//         }
-//         if (!form.bodyTypeId || form.bodyTypeId === 0) {
-//             setError("Please select a valid body type");
-//             console.log("Validation failed: Invalid bodyTypeId");
-//             return;
-//         }
-//         if (!form.categoryId || form.categoryId === 0) {
-//             setError("Please select a valid category");
-//             console.log("Validation failed: Invalid categoryId");
-//             return;
-//         }
-//         if (!form.driveTypeId || form.driveTypeId === 0) {
-//             setError("Please select a valid drive type");
-//             console.log("Validation failed: Invalid driveTypeId");
-//             return;
-//         }
-//         if (!form.fuelTypeId || form.fuelTypeId === 0) {
-//             setError("Please select a valid fuel type");
-//             console.log("Validation failed: Invalid fuelTypeId");
-//             return;
-//         }
-//         if (form.isLeasingAvailable === undefined || form.isLeasingAvailable === null) {
-//             setError("Leasing status is required");
-//             console.log("Validation failed: isLeasingAvailable is undefined or null");
-//             return;
-//         }
-
-//         try {
-//             const formData = new FormData();
-        
-//             // Добавляем все поля в FormData
-//             formData.append("brandId", form.brandId.toString());
-//             formData.append("model", form.model);
-//             formData.append("year", form.year.toString());
-//             formData.append("mileage", form.mileage.toString());
-//             formData.append("color", form.color);
-//             formData.append("seats", form.seats.toString());
-//             formData.append("pricePerDay", form.pricePerDay.toString());
-//             formData.append("latitude", form.latitude.toString());
-//             formData.append("longitude", form.longitude.toString());
-//             formData.append("bodyTypeId", form.bodyTypeId.toString());
-//             formData.append("categoryId", form.categoryId.toString());
-//             formData.append("driveTypeId", form.driveTypeId.toString());
-//             formData.append("fuelTypeId", form.fuelTypeId.toString());
-//             formData.append("isLeasingAvailable", form.isLeasingAvailable.toString());
-            
-//             // Добавляем featureIds
-//             form.featureIds.forEach((id, index) => {
-//                 formData.append(`featureIds[${index}]`, id.toString());
-//             });
-
-//             // Добавляем изображение, если есть
-//             if (form.image) {
-//                 formData.append("image", form.image);
-//             }
-
-//             try {
-//                 const carData: CarCreateDto = {
-//                   brandId: form.brandId,
-//                   model: form.model,
-//                   year: form.year,
-//                   mileage: form.mileage,
-//                   color: form.color,
-//                   seats: form.seats,
-//                   pricePerDay: form.pricePerDay,
-//                   latitude: form.latitude,
-//                   longitude: form.longitude,
-//                   bodyTypeId: form.bodyTypeId,
-//                   categoryId: form.categoryId,
-//                   driveTypeId: form.driveTypeId,
-//                   fuelTypeId: form.fuelTypeId,
-//                   featureIds: form.featureIds,
-//                   image: form.image, // или null если нет изображения
-//                   isLeasingAvailable: form.isLeasingAvailable
-//                 };
-
-//                 if (editingId) {
-//                     // Обновляем существующий автомобиль
-//                     await carService.update(editingId, carData);
-//                     setSuccess("Car updated successfully!");
-//                 } else {
-//                     // Создаем новый автомобиль
-//                     await carService.create(carData);
-//                     setSuccess("Car created successfully!");
-//                 }
-//             } catch (error: any) 
-//             {
-//                 setError(error.message || "Failed to save car");
-//                 console.error("Error in handleSubmit:", error);
-//             }
-            
-//             setForm({
-//                 brandId: 0,
-//                 model: "",
-//                 year: 0,
-//                 mileage: 0,
-//                 color: "",
-//                 seats: 0,
-//                 pricePerDay: 0,
-//                 latitude: 0,
-//                 longitude: 0,
-//                 bodyTypeId: 0,
-//                 categoryId: 0,
-//                 driveTypeId: 0,
-//                 fuelTypeId: 0,
-//                 featureIds: [],
-//                 image: null,
-//                 isLeasingAvailable: false,
-//             });
-//             setEditingId(null);
-//             const carsData = await carService.getCars();
-//             setCars(carsData.cars);
-//             // console.log("Cars updated:", carsData.cars);
-//             // await carService.update(id, formData);
-//         } catch (error: any) {
-//             setError(error.message || "Failed to save car");
-//             console.error("Error in handleSubmit:", error);
-//         } finally {
-//             setIsLoading(false);
-//         }
-//     };
-
-//     const handleDelete = async (id: number) => {
-//         try {
-//             await carService.delete(id);
-//             setSuccess("Car deleted successfully!");
-//             const carsData = await carService.getCars();
-//             setCars(carsData.cars);
-//         } catch (error: any) {
-//             setError(error.message || "Failed to delete car");
-//             console.error(error);
-//         }
-//     };
-
-//     return (
-//         <Container sx={{ p: 4 }}>
-//             <Typography variant="h4" mb={4}>
-//                 Manage Cars
-//             </Typography>
-//             <form onSubmit={handleSubmit}>
-//                 <Grid container spacing={2}>
-                    
-//                     <Grid component="div" xs={12} sm={6}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Brand</InputLabel>
-//                             <Select
-//                                 value={form.brandId || ""}
-//                                 onChange={(e) => setForm({ ...form, brandId: Number(e.target.value) })}
-//                             >
-//                                 <MenuItem value={0}>Select Brand</MenuItem>
-//                                 {brands.map((brand) => (
-//                                     <MenuItem key={brand.id} value={brand.id}>
-//                                         {brand.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-                    
-//                     <Grid component="div" xs={12} sm={6}>
-//                         <TextField
-//                             fullWidth
-//                             label="Model"
-//                             value={form.model}
-//                             onChange={(e) => setForm({ ...form, model: e.target.value })}
-//                         />
-//                     </Grid>
-                    
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Year"
-//                             type="number"
-//                             value={form.year || ""}
-//                             onChange={(e) => setForm({ ...form, year: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-                    
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Mileage"
-//                             type="number"
-//                             value={form.mileage || ""}
-//                             onChange={(e) => setForm({ ...form, mileage: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-                    
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Color"
-//                             value={form.color}
-//                             onChange={(e) => setForm({ ...form, color: e.target.value })}
-//                         />
-//                     </Grid>
-                    
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Seats"
-//                             type="number"
-//                             value={form.seats || ""}
-//                             onChange={(e) => setForm({ ...form, seats: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-                   
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Price per Day"
-//                             type="number"
-//                             value={form.pricePerDay || ""}
-//                             onChange={(e) => setForm({ ...form, pricePerDay: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-                   
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Latitude"
-//                             type="number"
-//                             value={form.latitude || ""}
-//                             onChange={(e) => setForm({ ...form, latitude: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-                
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <TextField
-//                             fullWidth
-//                             label="Longitude"
-//                             type="number"
-//                             value={form.longitude || ""}
-//                             onChange={(e) => setForm({ ...form, longitude: Number(e.target.value) })}
-//                         />
-//                     </Grid>
-            
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Body Type</InputLabel>
-//                             <Select
-//                                 value={form.bodyTypeId || ""}
-//                                 onChange={(e) => setForm({ ...form, bodyTypeId: Number(e.target.value) })}
-//                             >
-//                                 <MenuItem value={0}>Select Body Type</MenuItem>
-//                                 {bodyTypes.map((bodyType) => (
-//                                     <MenuItem key={bodyType.id} value={bodyType.id}>
-//                                         {bodyType.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-                
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Category</InputLabel>
-//                             <Select
-//                                 value={form.categoryId || ""}
-//                                 onChange={(e) => setForm({ ...form, categoryId: Number(e.target.value) })}
-//                             >
-//                                 <MenuItem value={0}>Select Category</MenuItem>
-//                                 {categories.map((category) => (
-//                                     <MenuItem key={category.id} value={category.id}>
-//                                         {category.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-                 
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Drive Type</InputLabel>
-//                             <Select
-//                                 value={form.driveTypeId || ""}
-//                                 onChange={(e) => setForm({ ...form, driveTypeId: Number(e.target.value) })}
-//                             >
-//                                 <MenuItem value={0}>Select Drive Type</MenuItem>
-//                                 {driveTypes.map((driveType) => (
-//                                     <MenuItem key={driveType.id} value={driveType.id}>
-//                                         {driveType.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-         
-//                     <Grid component="div" xs={12} sm={3}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Fuel Type</InputLabel>
-//                             <Select
-//                                 value={form.fuelTypeId || ""}
-//                                 onChange={(e) => setForm({ ...form, fuelTypeId: Number(e.target.value) })}
-//                             >
-//                                 <MenuItem value={0}>Select Fuel Type</MenuItem>
-//                                 {fuelTypes.map((fuelType) => (
-//                                     <MenuItem key={fuelType.id} value={fuelType.id}>
-//                                         {fuelType.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-               
-//                     <Grid xs={12} sm={3}>
-//                         <FormControl fullWidth required>
-//                             <InputLabel>Leasing Status</InputLabel>
-//                             <Select
-//                                 value={form.isLeasingAvailable ? "true" : "false"}
-//                                 onChange={(e) => {
-//                                     const value = e.target.value === "true";
-//                                     console.log("Leasing status changed to:", value);
-//                                     setForm((prevForm) => ({
-//                                         ...prevForm,
-//                                         isLeasingDisabled: value,
-//                                     }));
-//                                 }}
-//                             >
-//                                 <MenuItem value="false">Enable Leasing</MenuItem>
-//                                 <MenuItem value="true">Disable Leasing</MenuItem>
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-
-//                     <Grid component="div" xs={12}>
-//                         <FormControl fullWidth>
-//                             <InputLabel>Features</InputLabel>
-//                             <Select
-//                                 multiple
-//                                 value={form.featureIds}
-//                                 onChange={(e) => setForm({ ...form, featureIds: e.target.value as number[] })}
-//                             >
-//                                 {features.map((feature) => (
-//                                     <MenuItem key={feature.id} value={feature.id}>
-//                                         {feature.name}
-//                                     </MenuItem>
-//                                 ))}
-//                             </Select>
-//                         </FormControl>
-//                     </Grid>
-              
-//                     <Grid component="div" xs={12}>
-//                         <input
-//                             type="file"
-//                             accept="image/jpeg,image/png"
-//                             onChange={(e) => setForm({ ...form, image: e.target.files ? e.target.files[0] : null })}
-//                         />
-//                     </Grid>
-                
-//                     <Grid component="div" xs={12}>
-//                         <Button type="submit" variant="contained" disabled={isLoading}>
-//                             {isLoading ? <CircularProgress size={24} /> : editingId ? "Update Car" : "Add Car"}
-//                         </Button>
-//                     </Grid>
-//                 </Grid>
-//             </form>
-//             <Box sx={{ mt: 4 }}>
-//                 <Typography variant="h5">Existing Cars</Typography>
-//                 {cars.map((car) => (
-//                     <Box key={car.id} sx={{ border: "1px solid #ccc", p: 2, mt: 2, borderRadius: 2 }}>
-//                         <Typography>
-//                             {brands.find((b) => b.id === car.brandId)?.name || "Unknown"} {car.model}
-//                         </Typography>
-//                         <Button onClick={() => handleEdit(car)}>Edit</Button>
-//                         <Button onClick={() => handleDelete(car.id)} color="error">
-//                             Delete
-//                         </Button>
-//                     </Box>
-//                 ))}
-//             </Box>
-//         </Container>
-//     );
-// };
-
-// export default AdminCarManagement;
-
+/**
+ * @fileoverview Admin component for managing cars in the system
+ * (Административный компонент для управления автомобилями в системе)
+ * @module components/AdminCarManagement
+ */
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Car, CarCreateDto, BodyType, Brand, CarCategory, CarDriveType, FuelType, CarFeature } from "../models/car.models";
@@ -573,6 +45,11 @@ import {
     MyLocation
 } from "@mui/icons-material";
 
+/**
+ * @component
+ * @description A styled button component with gradient background and hover effects
+ * (Стилизованная кнопка с градиентным фоном и эффектами при наведении)
+ */
 const GradientButton = styled(Button)({
     background: 'linear-gradient(45deg, #2196F3 30%, #21CBF3 90%)',
     border: 0,
@@ -585,6 +62,11 @@ const GradientButton = styled(Button)({
     },
 });
 
+/**
+ * @component
+ * @description A styled card component with enhanced visual effects and hover animation
+ * (Стилизованная карточка с улучшенными визуальными эффектами и анимацией при наведении)
+ */
 const StyledCard = styled(Card)({
     borderRadius: 16,
     boxShadow: '0 8px 16px rgba(0,0,0,0.1)',
@@ -595,6 +77,11 @@ const StyledCard = styled(Card)({
     }
 });
 
+/**
+ * @component
+ * @description A styled section header with icon alignment
+ * (Стилизованный заголовок раздела с выравниванием иконок)
+ */
 const SectionHeader = styled(Typography)({
     display: 'flex',
     alignItems: 'center',
@@ -605,21 +92,72 @@ const SectionHeader = styled(Typography)({
     }
 });
 
+/**
+ * @component
+ * @description Admin component for managing cars - adding, editing, and deleting cars
+ * (Административный компонент для управления автомобилями - добавление, редактирование и удаление автомобилей)
+ * @returns {JSX.Element} Rendered component
+ * (Отрендеренный компонент)
+ */
 const AdminCarManagement: React.FC = () => {
+    /**
+     * @type {Object} User authentication context
+     * (Контекст аутентификации пользователя)
+     */
     const { user } = useAuth();
+    /**
+     * @type {Function} React Router navigate function
+     * (Функция навигации React Router)
+     */
     const navigate = useNavigate();
+    /**
+     * @type {[Car[], React.Dispatch<React.SetStateAction<Car[]>>]} State for car list
+     * (Состояние для списка автомобилей)
+     */
     const [cars, setCars] = useState<Car[]>([]);
+    /**
+     * @type {[Brand[], React.Dispatch<React.SetStateAction<Brand[]>>]} State for brand list
+     * (Состояние для списка брендов)
+     */
     const [brands, setBrands] = useState<Brand[]>([]);
+    /**
+     * @type {[BodyType[], React.Dispatch<React.SetStateAction<BodyType[]>>]} State for body type list
+     * (Состояние для списка типов кузова)
+     */
     const [bodyTypes, setBodyTypes] = useState<BodyType[]>([]);
+    /**
+     * @type {[CarCategory[], React.Dispatch<React.SetStateAction<CarCategory[]>>]} State for category list
+     * (Состояние для списка категорий)
+     */
     const [categories, setCategories] = useState<CarCategory[]>([]);
+    /**
+     * @type {[CarDriveType[], React.Dispatch<React.SetStateAction<CarDriveType[]>>]} State for drive type list
+     * (Состояние для списка типов привода)
+     */
     const [driveTypes, setDriveTypes] = useState<CarDriveType[]>([]);
+    /**
+     * @type {[FuelType[], React.Dispatch<React.SetStateAction<FuelType[]>>]} State for fuel type list
+     * (Состояние для списка типов топлива)
+     */
     const [fuelTypes, setFuelTypes] = useState<FuelType[]>([]);
+    /**
+     * @type {[CarFeature[], React.Dispatch<React.SetStateAction<CarFeature[]>>]} State for feature list
+     * (Состояние для списка особенностей)
+     */
     const [features, setFeatures] = useState<CarFeature[]>([]);
+    /**
+     * @type {Object} Pagination state
+     * (Состояние пагинации)
+     */
     const [pagination, setPagination] = useState({
         totalCount: 0,
         pageNumber: 1,
         pageSize: 9
     });
+    /**
+     * @type {[CarCreateDto, React.Dispatch<React.SetStateAction<CarCreateDto>>]} Form state for car data
+     * (Состояние формы для данных автомобиля)
+     */
     const [form, setForm] = useState<CarCreateDto>({
         brandId: 0,
         model: "",
@@ -638,17 +176,43 @@ const AdminCarManagement: React.FC = () => {
         image: null,
         isLeasingAvailable: false,
     });
+    /**
+     * @type {[number | null, React.Dispatch<React.SetStateAction<number | null>>]} ID of car being edited
+     * (ID редактируемого автомобиля)
+     */
     const [editingId, setEditingId] = useState<number | null>(null);
+    /**
+     * @type {[string | null, React.Dispatch<React.SetStateAction<string | null>>]} Error message state
+     * (Состояние сообщения об ошибке)
+     */
     const [error, setError] = useState<string | null>(null);
+    /**
+     * @type {[string | null, React.Dispatch<React.SetStateAction<string | null>>]} Success message state
+     * (Состояние сообщения об успехе)
+     */
     const [success, setSuccess] = useState<string | null>(null);
+    /**
+     * @type {[boolean, React.Dispatch<React.SetStateAction<boolean>>]} Loading state
+     * (Состояние загрузки)
+     */
     const [isLoading, setIsLoading] = useState(false);
 
+    /**
+     * @description Effect hook to load initial data and check user permissions
+     * (Хук эффекта для загрузки начальных данных и проверки прав пользователя)
+     */
     useEffect(() => {
         if (user?.userRole !== "admin") {
             navigate("/");
             return;
         }
 
+        /**
+         * @async
+         * @function fetchData
+         * @description Fetches all necessary data for the component
+         * (Получает все необходимые данные для компонента)
+         */
         const fetchData = async () => {
             try {
                 const [
@@ -692,6 +256,13 @@ const AdminCarManagement: React.FC = () => {
         fetchData();
     }, [user, navigate, pagination.pageNumber, pagination.pageSize]);
 
+    /**
+     * @function handleEdit
+     * @description Sets up form for editing an existing car
+     * (Настраивает форму для редактирования существующего автомобиля)
+     * @param {Car} car - Car object to edit
+     * (Объект автомобиля для редактирования)
+     */
     const handleEdit = (car: Car) => {
         console.log("Editing car:", car);
         console.log("Setting isLeasingAvailable to:", car.isLeasingAvailable);
@@ -716,6 +287,16 @@ const AdminCarManagement: React.FC = () => {
         });
     };
 
+    /**
+     * @async
+     * @function handleLeasingToggle
+     * @description Toggles the leasing availability status of a car
+     * (Переключает статус доступности лизинга автомобиля)
+     * @param {number} id - ID of the car
+     * (ID автомобиля)
+     * @param {boolean} isLeasingAvailable - Current leasing status
+     * (Текущий статус лизинга)
+     */
     const handleLeasingToggle = async (id: number, isLeasingAvailable: boolean) => {
         try {
             const newLeasingStatus = !isLeasingAvailable;
@@ -738,6 +319,14 @@ const AdminCarManagement: React.FC = () => {
         }
     };
 
+    /**
+     * @async
+     * @function handleSubmit
+     * @description Handles form submission for creating or updating a car
+     * (Обрабатывает отправку формы для создания или обновления автомобиля)
+     * @param {React.FormEvent} e - Form event
+     * (Событие формы)
+     */
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         console.log("handleSubmit called with form:", form);
@@ -852,6 +441,14 @@ const AdminCarManagement: React.FC = () => {
         }
     };
 
+    /**
+     * @async
+     * @function handleDelete
+     * @description Deletes a car from the system
+     * (Удаляет автомобиль из системы)
+     * @param {number} id - ID of the car to delete
+     * (ID автомобиля для удаления)
+     */
     const handleDelete = async (id: number) => {
         try {
             await carService.delete(id);
@@ -872,6 +469,15 @@ const AdminCarManagement: React.FC = () => {
         }
     };
 
+    /**
+     * @function handlePageChange
+     * @description Handles pagination page changes
+     * (Обрабатывает изменения страницы пагинации)
+     * @param {React.ChangeEvent<unknown>} _ - Change event (unused)
+     * (Событие изменения (не используется))
+     * @param {number} value - New page number
+     * (Новый номер страницы)
+     */
     const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
         setPagination(prev => ({ ...prev, pageNumber: value }));
     };

@@ -1,18 +1,58 @@
+/**
+ * @fileoverview Component for displaying a paginated list of cars with navigation
+ * (Компонент для отображения пагинированного списка автомобилей с навигацией)
+ * @module components/CarList
+ */
 import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CarContext } from "../context/ProjectContext";
 import { Car } from "../models/car.models";
 import { Pagination, Box } from "@mui/material";
 
+/**
+ * @constant {string} BASE_API_URL - Base URL for API requests
+ * (Базовый URL для API-запросов)
+ */
 const BASE_API_URL = "https://localhost:7154";
 
+/**
+ * @component
+ * @description Displays a paginated list of cars with details and navigation
+ * (Отображает пагинированный список автомобилей с деталями и навигацией)
+ * @returns {JSX.Element} Rendered car list with pagination
+ * (Отрендеренный список автомобилей с пагинацией)
+ */
 const CarList: React.FC = () => {
+  /**
+   * @type {ProjectContextProps | undefined} Car context containing car data and methods
+   * (Контекст автомобилей, содержащий данные и методы)
+   */
   const context = useContext(CarContext);
+  /**
+   * @type {Function} React Router navigate function for programmatic navigation
+   * (Функция навигации React Router для программной навигации)
+   */
   const navigate = useNavigate();
+  /**
+   * @type {[number, React.Dispatch<React.SetStateAction<number>>]} Current page state
+   * (Состояние текущей страницы)
+   */
   const [page, setPage] = useState(1);
+  /**
+   * @type {number} Number of cars to display per page
+   * (Количество автомобилей для отображения на странице)
+   */
   const carsPerPage = 9;
 
-  // Handle page change
+  /**
+   * @function handlePageChange
+   * @description Handles pagination page changes and scrolls to top
+   * (Обрабатывает изменения страницы пагинации и прокручивает страницу вверх)
+   * @param {React.ChangeEvent<unknown>} event - The change event
+   * (Событие изменения)
+   * @param {number} value - The new page number
+   * (Новый номер страницы)
+   */
   const handlePageChange = (event: React.ChangeEvent<unknown>, value: number) => {
     console.log("Page changed to:", value);
     setPage(value);
@@ -24,12 +64,32 @@ const CarList: React.FC = () => {
     return <div>No context available!</div>;
   }
 
+  /**
+   * @type {Car[]} Array of car objects from context
+   * (Массив объектов автомобилей из контекста)
+   */
   const { cars } = context;
   
   // Calculate pagination
+  /**
+   * @type {number} Index of the last car on current page
+   * (Индекс последнего автомобиля на текущей странице)
+   */
   const indexOfLastCar = page * carsPerPage;
+  /**
+   * @type {number} Index of the first car on current page
+   * (Индекс первого автомобиля на текущей странице)
+   */
   const indexOfFirstCar = indexOfLastCar - carsPerPage;
+  /**
+   * @type {Car[]} Array of cars for the current page
+   * (Массив автомобилей для текущей страницы)
+   */
   const currentCars = cars.slice(indexOfFirstCar, indexOfLastCar);
+  /**
+   * @type {number} Total number of pages
+   * (Общее количество страниц)
+   */
   const totalPages = Math.ceil(cars.length / carsPerPage);
 
   return (

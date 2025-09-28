@@ -1,14 +1,34 @@
+/**
+ * @fileoverview Home page component with hero section and navigation
+ * (Компонент домашней страницы с главным разделом и навигацией)
+ * @module components/Pages/Home
+ */
 import { Typography, Button, Box, Container, Grid, Fade, useScrollTrigger, Stack } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { CarRental, DirectionsCar, LocalGasStation, Speed, CheckCircle, Map, ListAlt, ArrowForward } from "@mui/icons-material";
 
+/**
+ * @component
+ * @description Home page component with animated hero section and navigation buttons
+ * (Компонент домашней страницы с анимированным главным разделом и навигационными кнопками)
+ * @returns {JSX.Element} Rendered home page with hero section
+ * (Отрендеренная домашняя страница с главным разделом)
+ */
 const Home = () => {
+  /**
+   * @type {Function} React Router navigate function for programmatic navigation
+   * (Функция навигации React Router для программной навигации)
+   */
   const navigate = useNavigate();
 
   return (
     <Box sx={{ overflowX: 'hidden' }}>
       {/* Hero Section */}
+      {/**
+       * @description Hero section with gradient background and main content
+       * (Главный раздел с градиентным фоном и основным содержимым)
+       */}
       <Box
         sx={{
           minHeight: '100vh',
@@ -37,7 +57,10 @@ const Home = () => {
                 Арендуйте автомобиль за 3 клика
               </Typography>
               
-              {/* Quick Access Buttons */}
+              {/**
+               * @description Quick access navigation buttons section
+               * (Раздел кнопок быстрого доступа для навигации)
+               */}
               <Stack spacing={3} sx={{ maxWidth: 500, mb: 6 }}>
                 <Button
                   fullWidth
@@ -93,7 +116,7 @@ const Home = () => {
                   fontWeight: 300,
                 }}
               >
-                Выберите удобный способ поиска клада: 
+                
                 <Box component="span" sx={{ display: 'block', mt: 1 }}>
                 Пираты XXI века предпочитают
                 кондиционер, полный бак
@@ -103,12 +126,19 @@ const Home = () => {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              
-              <Box sx={{ 
+              {/**
+               * @description Animated parallax effect with car images
+               * (Анимированный эффект параллакса с изображениями автомобилей)
+               */}
+              <Box sx={{
                 position: 'relative',
                 height: '100vh',
                 overflow: 'hidden'
               }}>
+                {/**
+                 * @description Map through parallax layers to create depth effect
+                 * (Перебор слоев параллакса для создания эффекта глубины)
+                 */}
                 {[1, 2, 3].map((item, index) => (
                   <motion.div
                     key={item}
@@ -142,6 +172,10 @@ const Home = () => {
                   </motion.div>
                 ))}
                 
+                {/**
+                 * @description Centered text overlay on parallax background
+                 * (Центрированный текстовый оверлей на фоне параллакса)
+                 */}
                 <Box sx={{
                   position: 'absolute',
                   top: '50%',

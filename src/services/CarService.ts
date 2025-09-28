@@ -1,15 +1,51 @@
+/**
+ * @fileoverview Service for handling car-related API operations
+ * (Сервис для обработки API-операций, связанных с автомобилями)
+ * @module services/CarService
+ */
 import { Car, CarSearchResult, CarCreateDto, CarFilterDto } from "../models/car.models";
 import axios from "axios";
 
+/**
+ * @constant {string} API_URL - Base URL for API requests
+ * (Базовый URL для API-запросов)
+ */
 const API_URL = "https://localhost:7154/api";
 
+/**
+ * @class CarService
+ * @description Service class for managing car operations
+ * (Сервисный класс для управления операциями с автомобилями)
+ */
 export class CarService {
+    /**
+     * @private
+     * @type {string} Base URL for API requests
+     * (Базовый URL для API-запросов)
+     */
     private baseUrl: string;
 
+    /**
+     * @constructor
+     * @param {string} baseUrl - Base URL for API requests
+     * (Базовый URL для API-запросов)
+     */
     constructor(baseUrl: string) {
         this.baseUrl = baseUrl;
     }
 
+    /**
+     * @async
+     * @method getCars
+     * @description Fetches cars with optional filtering
+     * (Получает автомобили с опциональной фильтрацией)
+     * @param {CarFilterDto} [filters] - Optional filters for car search
+     * (Опциональные фильтры для поиска автомобилей)
+     * @returns {Promise<CarSearchResult>} Promise resolving to car search results
+     * (Промис, разрешающийся в результаты поиска автомобилей)
+     * @throws {Error} If API request fails
+     * (Если запрос API не удался)
+     */
     async getCars(filters?: CarFilterDto): Promise<CarSearchResult> {
         const params = new URLSearchParams();
         let endpoint = '/api/Cars';
@@ -43,6 +79,18 @@ export class CarService {
         };
     }
 
+    /**
+     * @async
+     * @method getById
+     * @description Fetches a car by its ID
+     * (Получает автомобиль по его ID)
+     * @param {number} id - ID of the car to fetch
+     * (ID автомобиля для получения)
+     * @returns {Promise<Car>} Promise resolving to car data
+     * (Промис, разрешающийся в данные автомобиля)
+     * @throws {Error} If ID is invalid or API request fails
+     * (Если ID недействителен или запрос API не удался)
+     */
     async getById(id: number): Promise<Car> {
          if (isNaN(id)) {
             throw new Error("Неверный идентификатор автомобиля");
@@ -66,6 +114,18 @@ export class CarService {
         };
     }
 
+    /**
+     * @async
+     * @method create
+     * @description Creates a new car
+     * (Создает новый автомобиль)
+     * @param {CarCreateDto} car - Car data for creation
+     * (Данные автомобиля для создания)
+     * @returns {Promise<void>} Promise that resolves when car is created
+     * (Промис, который разрешается, когда автомобиль создан)
+     * @throws {Error} If API request fails
+     * (Если запрос API не удался)
+     */
     async create(car: CarCreateDto): Promise<void> {
         const formData = new FormData();
         formData.append("brandId", car.brandId.toString());
@@ -81,7 +141,7 @@ export class CarService {
         formData.append("categoryId", car.categoryId.toString());
         formData.append("driveTypeId", car.driveTypeId.toString());
         formData.append("fuelTypeId", car.fuelTypeId.toString());
-        formData.append("IsLeasingDisabled", (!car.isLeasingAvailable).toString());
+        formData.append("isLeasingDisabled", (!car.isLeasingAvailable).toString());
         formData.append("imagePath", "/images/cars/default.jpg");
         if (car.image) {
             formData.append("image", car.image);
@@ -121,6 +181,20 @@ export class CarService {
         }
     }
 
+    /**
+     * @async
+     * @method update
+     * @description Updates an existing car
+     * (Обновляет существующий автомобиль)
+     * @param {number} id - ID of the car to update
+     * (ID автомобиля для обновления)
+     * @param {CarCreateDto} data - Updated car data
+     * (Обновленные данные автомобиля)
+     * @returns {Promise<void>} Promise that resolves when car is updated
+     * (Промис, который разрешается, когда автомобиль обновлен)
+     * @throws {Error} If API request fails
+     * (Если запрос API не удался)
+     */
     async update(id: number, data: CarCreateDto): Promise<void> {
         const formData = new FormData();
         formData.append("Id", id.toString());
@@ -137,7 +211,7 @@ export class CarService {
         formData.append("categoryId", data.categoryId.toString());
         formData.append("driveTypeId", data.driveTypeId.toString());
         formData.append("fuelTypeId", data.fuelTypeId.toString());
-        formData.append("IsLeasingDisabled", (!data.isLeasingAvailable).toString());
+        formData.append("isLeasingDisabled", (!data.isLeasingAvailable).toString());
         formData.append("imagePath", "/images/cars/default.jpg");
         if (data.image) {
             formData.append("image", data.image);
@@ -186,6 +260,20 @@ export class CarService {
         }
     }
 
+    /**
+     * @async
+     * @method updateWithImage
+     * @description Updates a car with a new image
+     * (Обновляет автомобиль с новым изображением)
+     * @param {number} id - ID of the car to update
+     * (ID автомобиля для обновления)
+     * @param {FormData} formData - Form data containing car data and image
+     * (Данные формы, содержащие данные автомобиля и изображение)
+     * @returns {Promise<void>} Promise that resolves when car is updated
+     * (Промис, который разрешается, когда автомобиль обновлен)
+     * @throws {Error} If API request fails
+     * (Если запрос API не удался)
+     */
     async updateWithImage(id: number, formData: FormData): Promise<void> {
         const token = localStorage.getItem("jwtToken");
         console.log("Token for updateWithImage:", token);
@@ -223,6 +311,18 @@ export class CarService {
     }
 
 
+    /**
+     * @async
+     * @method delete
+     * @description Deletes a car
+     * (Удаляет автомобиль)
+     * @param {number} id - ID of the car to delete
+     * (ID автомобиля для удаления)
+     * @returns {Promise<void>} Promise that resolves when car is deleted
+     * (Промис, который разрешается, когда автомобиль удален)
+     * @throws {Error} If API request fails
+     * (Если запрос API не удался)
+     */
     async delete(id: number): Promise<void> {
         const token = localStorage.getItem("jwtToken");
         console.log("Token for delete:", token);
@@ -251,4 +351,8 @@ export class CarService {
     }
 }
 
+/**
+ * @constant {CarService} carService - Singleton instance of CarService
+ * (Синглтон-экземпляр CarService)
+ */
 export const carService = new CarService("https://localhost:7154");

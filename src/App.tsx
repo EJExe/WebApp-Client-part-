@@ -1,3 +1,8 @@
+/**
+ * @fileoverview Main application component with React Router setup
+ * (Главный компонент приложения с настройкой React Router)
+ * @module App
+ */
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useState } from 'react';
 import { AuthProvider } from "./context/AuthContext";
@@ -23,6 +28,21 @@ import { OrderProvider } from "./context/OrderContext";
 import AdminOrdersPage from "./components/Pages/AdminOrdersPage";
 
 
+/**
+ * @component
+ * @description Route wrapper that protects routes requiring authentication or admin privileges
+ * Uses React Router's Navigate component for redirection
+ * (Обертка маршрута, защищающая маршруты, требующие аутентификации или привилегий администратора.
+ * Использует компонент Navigate из React Router для перенаправления)
+ * @param {Object} props - Component props
+ * (Свойства компонента)
+ * @param {React.ReactElement} props.children - Child component to render if authorized
+ * (Дочерний компонент для рендеринга, если пользователь авторизован)
+ * @param {boolean} [props.adminOnly=false] - Whether the route requires admin privileges
+ * (Требует ли маршрут привилегий администратора)
+ * @returns {JSX.Element} The protected component or a redirect
+ * (Защищенный компонент или перенаправление)
+ */
 const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boolean }> = ({
   children,
   adminOnly = false,
@@ -38,13 +58,27 @@ const ProtectedRoute: React.FC<{ children: React.ReactElement; adminOnly?: boole
   return children;
 };
 
+/**
+ * @component
+ * @description Main application component with React Router configuration
+ * Sets up routes, authentication, and layout
+ * (Главный компонент приложения с конфигурацией React Router.
+ * Настраивает маршруты, аутентификацию и макет)
+ * @returns {JSX.Element} The application with routing
+ * (Приложение с маршрутизацией)
+ */
 const App: React.FC = () => {
+  /**
+   * @type {[boolean, React.Dispatch<React.SetStateAction<boolean>>]} State for menu open/closed
+   * (Состояние для открытия/закрытия меню)
+   */
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
     <AuthProvider>
       <OrderProvider>
       <Layout>
+        {/* React Router Routes configuration */}
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<LoginPage />} />
